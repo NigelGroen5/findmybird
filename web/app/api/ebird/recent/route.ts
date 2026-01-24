@@ -1,9 +1,5 @@
 import { NextResponse } from "next/server";
-
-function asNum(v: string | null, fallback: number) {
-  const n = v ? Number(v) : NaN;
-  return Number.isFinite(n) ? n : fallback;
-}
+import { asNum } from "@/lib/utils";
 
 export async function GET(req: Request) {
   const key = process.env.EBIRD_API_KEY;
