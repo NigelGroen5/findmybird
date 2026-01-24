@@ -5,14 +5,15 @@ import { Icon } from "leaflet";
 import { useEffect } from "react";
 
 type UserMarkerProps = {
-  position: [number, number];
+  latitude: number;
+  longitude: number;
 };
 
 /**
  * UserMarker component - Displays a marker at the user's location
  * Fixes the default marker icon issue with Next.js/Leaflet
  */
-export function UserMarker({ position }: UserMarkerProps) {
+export default function UserMarker({ latitude, longitude }: UserMarkerProps) {
   useEffect(() => {
     // Fix for default marker icon issue in Next.js
     delete (Icon.Default.prototype as any)._getIconUrl;
@@ -26,13 +27,13 @@ export function UserMarker({ position }: UserMarkerProps) {
   }, []);
 
   return (
-    <Marker position={position}>
+    <Marker position={[latitude, longitude]}>
       <Popup>
         <div className="text-center">
           <strong>Your Location</strong>
           <br />
           <span className="text-sm text-gray-600">
-            {position[0].toFixed(6)}, {position[1].toFixed(6)}
+            {latitude.toFixed(6)}, {longitude.toFixed(6)}
           </span>
         </div>
       </Popup>

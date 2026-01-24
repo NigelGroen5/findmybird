@@ -1,31 +1,30 @@
 "use client";
 
-import { MapContainer as LeafletMapContainer, TileLayer } from "react-leaflet";
+import { MapContainer, TileLayer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
+import UserMarker from "./UserMarker";
+import RadiusCircle from "./RadiusCircle";
+
 type MapViewProps = {
-  center: [number, number];
-  zoom?: number;
-  children?: React.ReactNode;
+  latitude: number;
+  longitude: number;
 };
 
-/**
- * MapView component - Renders the Leaflet map container with OpenStreetMap tiles
- * This is a client component that wraps Leaflet's MapContainer and TileLayer
- */
-export function MapView({ center, zoom = 13, children }: MapViewProps) {
+export default function MapView({ latitude, longitude }: MapViewProps) {
   return (
-    <LeafletMapContainer
-      center={center}
-      zoom={zoom}
-      style={{ height: "100vh", width: "100vw", zIndex: 0 }}
-      scrollWheelZoom={true}
+    <MapContainer
+      center={[latitude, longitude]}
+      zoom={13}
+      style={{ height: "100vh", width: "100%" }}
     >
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution="&copy; OpenStreetMap contributors"
       />
-      {children}
-    </LeafletMapContainer>
+
+      <UserMarker latitude={latitude} longitude={longitude} />
+      <RadiusCircle latitude={latitude} longitude={longitude} />
+    </MapContainer>
   );
 }
