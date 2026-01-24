@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { API_ENDPOINTS } from "@/lib/constants";
 import type { Observation } from "@/lib/types";
 
@@ -74,17 +74,22 @@ export default function Page() {
     );
   }
 
+  // Automatically request location on page load
+  useEffect(() => {
+    useMyLocation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <main className="container mx-auto p-10">
       <h1 className="text-4xl font-bold mb-3">Birding</h1>
       <p className="text-lg mb-5">Find birds near you.</p>
 
-      <button
-        onClick={useMyLocation}
-        className="mt-5 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-      >
-        Use my location
-      </button>
+      {error && (
+        <div className="mt-3 flex gap-2">
+          <p className="text-red-500 mb-2">Unable to use your location. Try a preset location:</p>
+        </div>
+      )}
       <div className="mt-3 flex gap-2">
         <button
           onClick={() => loadAt(presets.Montreal.lat, presets.Montreal.lng)}

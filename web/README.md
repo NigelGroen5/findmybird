@@ -2,7 +2,15 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+First, install dependencies:
+
+```bash
+npm install --legacy-peer-deps
+```
+
+**Note:** The `--legacy-peer-deps` flag is required because `react-leaflet` currently lists React 18 as a peer dependency, but this project uses React 19. The library works fine with React 19, but npm requires this flag to install it.
+
+Then, run the development server:
 
 ```bash
 npm run dev
