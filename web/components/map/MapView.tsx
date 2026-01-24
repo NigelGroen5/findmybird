@@ -1,7 +1,8 @@
 "use client";
 
-import { MapContainer, TileLayer } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import type { Spot } from "@/lib/types";
 
 import UserMarker from "./UserMarker";
 import RadiusCircle from "./RadiusCircle";
@@ -9,9 +10,10 @@ import RadiusCircle from "./RadiusCircle";
 type MapViewProps = {
   latitude: number;
   longitude: number;
+  spots?: Spot[];
 };
 
-export default function MapView({ latitude, longitude }: MapViewProps) {
+export default function MapView({ latitude, longitude, spots = [] }: MapViewProps) {
   return (
     <MapContainer
       center={[latitude, longitude]}
@@ -25,6 +27,17 @@ export default function MapView({ latitude, longitude }: MapViewProps) {
 
       <UserMarker latitude={latitude} longitude={longitude} />
       <RadiusCircle latitude={latitude} longitude={longitude} />
+
+      {spots.map((spot) => (
+        <Marker key={spot.locId} position={[spot.lat, spot.lng]}>
+          <Popup>
+            <div className="text-sm">
+              <div className="font-semibold">{spot.locName}</div>
+              <div className="text-gray-600">{spot.numSpeciesAllTime} species</div>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
     </MapContainer>
   );
 }

@@ -10,4 +10,5 @@ export const DEFAULT_LOCATION = {
 
 export const API_ENDPOINTS = {
   EBIRD_RECENT: "/api/ebird/recent",
+  EBIRD_HOTSPOTS: "/api/ebird/hotspots",
 } as const;
