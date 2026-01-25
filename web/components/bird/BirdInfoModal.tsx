@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { API_ENDPOINTS } from "@/lib/constants";
+import { parseCsvRow } from "@/lib/utils";
 
 interface Bird {
   name: string;
@@ -33,14 +34,14 @@ export function BirdInfoModal({ speciesCode, onClose }: Props) {
         const response = await fetch("/birds.csv");
         const data = await response.text();
         const rows = data.split("\n").filter(Boolean);
-        const birdRow = rows.slice(1).find((r) => r.split(",")[2] === code);
+        const birdRow = rows.slice(1).find((r) => parseCsvRow(r)[2] === code);
 
         if (!birdRow) {
           setBird(null);
           return;
         }
 
-        const birdValues = birdRow.split(",");
+        const birdValues = parseCsvRow(birdRow);
         const birdObj: Bird = {
           scientific: birdValues[0],
           name: birdValues[1],
