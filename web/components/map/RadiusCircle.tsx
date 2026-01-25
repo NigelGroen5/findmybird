@@ -11,7 +11,7 @@ type RadiusCircleProps = {
 /**
  * RadiusCircle component - Displays a circle around the user's location
  */
-export default function RadiusCircle({ latitude, longitude, radiusKm = 10 }: RadiusCircleProps) {
+export default function RadiusCircle({ latitude, longitude, radiusKm = 5 }: RadiusCircleProps) {
   const radiusMeters = radiusKm * 1000;
   return (
     <Circle
