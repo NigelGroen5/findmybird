@@ -9,6 +9,7 @@ export type Coordinates = {
 };
 
 export type Observation = {
-  comName: string;
+  commonName: string;
+  imageUrl?: string | null;
   // Add more fields as needed
 };

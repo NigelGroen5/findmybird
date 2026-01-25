@@ -37,7 +37,31 @@ export default function Page() {
         return;
       }
       const json = await res.json();
-      setObservations(json.observations || []);
+      
+      // Debug: log full response
+      console.log('API Response:', json);
+      
+      // Check for errors in response
+      if (json.error) {
+        setError(`API Error: ${json.error}${json.details ? ` - ${json.details}` : ''}`);
+        setObservations([]);
+        return;
+      }
+      
+      const obs = json.observations || [];
+      
+      // Debug: log photo stats and sample imageUrls
+      if (json.meta?.photoStats) {
+        console.log('Photo stats:', json.meta.photoStats);
+      }
+      console.log(`Received ${obs.length} observations from API`);
+      const withPhotos = obs.filter((o: Observation) => o.imageUrl);
+      console.log(`${withPhotos.length} observations have imageUrl`);
+      if (withPhotos.length > 0) {
+        console.log('Sample imageUrls:', withPhotos.slice(0, 3).map((o: Observation) => ({ name: o.commonName, url: o.imageUrl })));
+      }
+      
+      setObservations(obs);
     } catch (e: unknown) {
       const err = e as Error;
       setError(err?.message || "Fetch failed");
@@ -87,9 +111,38 @@ export default function Page() {
 
           <ul className="space-y-2 overflow-y-auto">
             {observations.map((o, i) => (
-              <li key={i} className="p-3 bg-gray-50 rounded hover:bg-blue-50 transition">
-                <div className="font-semibold text-gray-900">{o.comName}</div>
+              <li
+                key={i}
+                className="p-3 bg-gray-50 rounded hover:bg-blue-50 transition flex gap-4 items-center"
+              >
+                {o.imageUrl ? (
+                  <>
+                    <img
+                      src={o.imageUrl}
+                      alt={o.commonName}
+                      className="w-16 h-16 object-cover rounded-md border"
+                      onError={(e) => {
+                        console.error(`Failed to load image for ${o.commonName}: ${o.imageUrl}`);
+                        e.currentTarget.style.display = 'none';
+                        const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
+                        if (placeholder) placeholder.style.display = 'flex';
+                      }}
+                    />
+                    <div className="w-16 h-16 bg-gray-200 rounded-md flex items-center justify-center text-xs text-gray-500" style={{ display: 'none' }}>
+                      No photo
+                    </div>
+                  </>
+                ) : (
+                  <div className="w-16 h-16 bg-gray-200 rounded-md flex items-center justify-center text-xs text-gray-500">
+                    No photo
+                  </div>
+                )}
+
+                <div>
+                  <div className="font-semibold text-gray-900">{o.commonName}</div>
+                </div>
               </li>
+
             ))}
           </ul>
         </div>
