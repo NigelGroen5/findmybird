@@ -52,6 +52,7 @@ type MapViewProps = {
   spots?: Spot[];
   selectedSpotId?: string | null;
   onSpotSelect?: (spotId: string | null) => void;
+  radius?: number;
 };
 
 export default function MapView({ 
@@ -59,7 +60,8 @@ export default function MapView({
   longitude, 
   spots = [], 
   selectedSpotId,
-  onSpotSelect 
+  onSpotSelect,
+  radius = 10
 }: MapViewProps) {
   const center: [number, number] = [latitude, longitude];
   const selectedSpot = spots.find(s => s.locId === selectedSpotId) || null;
@@ -98,7 +100,7 @@ export default function MapView({
       />
 
       <UserMarker latitude={latitude} longitude={longitude} />
-      <RadiusCircle latitude={latitude} longitude={longitude} />
+      <RadiusCircle latitude={latitude} longitude={longitude} radiusKm={radius} />
 
       {spots.map((spot) => {
         const isSelected = selectedSpotId === spot.locId;

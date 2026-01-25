@@ -14,6 +14,8 @@ type LocationBarProps = {
   onLocationChange: (location: LocationOption) => void;
   onUseCurrentLocation: () => void;
   isUsingCurrentLocation: boolean;
+  radius?: number;
+  onRadiusChange?: (radius: number) => void;
 };
 
 const ONTARIO_CITIES: LocationOption[] = [
@@ -36,6 +38,8 @@ export function LocationBar({
   onLocationChange,
   onUseCurrentLocation,
   isUsingCurrentLocation,
+  radius = 10,
+  onRadiusChange,
 }: LocationBarProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -116,6 +120,24 @@ export function LocationBar({
                 </div>
               </>
             )}
+          </div>
+
+          {/* Radius Control */}
+          <div className="flex items-center gap-2 ml-4 pl-4 border-l border-gray-200">
+            <span className="text-xs text-gray-500 font-medium uppercase">Radius:</span>
+            {[5, 10, 15, 25].map((r) => (
+              <button
+                key={r}
+                onClick={() => onRadiusChange?.(r)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
+                  radius === r
+                    ? "bg-gray-900 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                {r}km
+              </button>
+            ))}
           </div>
         </div>
       </div>

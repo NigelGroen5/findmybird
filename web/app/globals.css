@@ -53,3 +53,7 @@ body {
   border: none !important;
   z-index: 1001 !important;
 }
+/* Hide Leaflet logo in bottom-left */
+.leaflet-control-attribution {
+  display: none !important;
+}

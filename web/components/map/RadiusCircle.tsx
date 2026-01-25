@@ -2,21 +2,21 @@
 
 import { Circle } from "react-leaflet";
 
-const RADIUS_METERS = 15000; // 15km
-
 type RadiusCircleProps = {
   latitude: number;
   longitude: number;
+  radiusKm?: number;
 };
 
 /**
- * RadiusCircle component - Displays a circle with a 15km radius around the user's location
+ * RadiusCircle component - Displays a circle around the user's location
  */
-export default function RadiusCircle({ latitude, longitude }: RadiusCircleProps) {
+export default function RadiusCircle({ latitude, longitude, radiusKm = 10 }: RadiusCircleProps) {
+  const radiusMeters = radiusKm * 1000;
   return (
     <Circle
       center={[latitude, longitude]}
-      radius={RADIUS_METERS}
+      radius={radiusMeters}
       pathOptions={{
         color: "#3b82f6",
         fillColor: "#3b82f6",
