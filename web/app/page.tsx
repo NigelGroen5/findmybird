@@ -194,7 +194,7 @@ export default function Page() {
                     : "text-gray-600 hover:text-gray-900"
                 }`}
               >
-                Trending spots ({spots.length})
+                Trending spots ({Math.min(25, spots.length)})
               </button>
             </div>
 
@@ -328,16 +328,16 @@ export default function Page() {
                             if (spotsToShow === 5) {
                               setSpotsToShow(15);
                             } else if (spotsToShow === 15) {
-                              setSpotsToShow(30);
+                              setSpotsToShow(25);
                             } else {
-                              setSpotsToShow(spots.length);
+                              setSpotsToShow(Math.min(25, spots.length));
                             }
                           }}
                           className="mt-4 w-full px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition-colors"
                         >
                           {spotsToShow === 5 && `Show top 15 (${Math.min(15, spots.length)})`}
-                          {spotsToShow === 15 && `Show top 30 (${Math.min(30, spots.length)})`}
-                          {spotsToShow === 30 && spots.length > 30 && `Show all (${spots.length})`}
+                          {spotsToShow === 15 && `Show top 25 (${Math.min(25, spots.length)})`}
+                          {spotsToShow === 25 && spots.length > 25 && `Show all (${Math.min(25, spots.length)})`}
                         </button>
                       )}
                       {spotsToShow > 5 && (
