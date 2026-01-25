@@ -61,7 +61,7 @@ export default function MapView({
   spots = [], 
   selectedSpotId,
   onSpotSelect,
-  radius = 10
+  radius = 5
 }: MapViewProps) {
   const center: [number, number] = [latitude, longitude];
   const selectedSpot = spots.find(s => s.locId === selectedSpotId) || null;

@@ -25,7 +25,7 @@ export default function Page() {
   const [activeTab, setActiveTab] = useState<"birds" | "spots">("birds");
   const [spotsToShow, setSpotsToShow] = useState(5);
   const [selectedSpotId, setSelectedSpotId] = useState<string | null>(null);
-  const [radius, setRadius] = useState(10);
+  const [radius, setRadius] = useState(5);
 
   async function loadAt(lat: number, lng: number, searchRadius?: number) {
     const radiusToUse = searchRadius ?? radius;
