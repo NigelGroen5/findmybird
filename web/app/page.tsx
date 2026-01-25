@@ -150,12 +150,12 @@ export default function Page() {
             <div className="w-1/2 flex-shrink-0">
               <div className="h-[600px] rounded-2xl overflow-hidden shadow-lg border border-gray-200/50 bg-white">
                 <MapView 
-              latitude={displayLat!} 
-              longitude={displayLng!} 
-              spots={spots}
-              selectedSpotId={selectedSpotId}
-              onSpotSelect={setSelectedSpotId}
-            />
+                  latitude={displayLat!} 
+                  longitude={displayLng!} 
+                  spots={spots.slice(0, spotsToShow)}
+                  selectedSpotId={selectedSpotId}
+                  onSpotSelect={setSelectedSpotId}
+                />
               </div>
             </div>
           )}
