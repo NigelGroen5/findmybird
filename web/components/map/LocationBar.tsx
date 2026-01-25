@@ -44,22 +44,22 @@ export function LocationBar({
     : currentLocation?.name || "Select a city";
 
   return (
-    <div className="bg-white border-b border-gray-200 shadow-sm z-50 relative">
-      <div className="container mx-auto px-4 py-3">
-        <div className="flex items-center gap-3">
-          <span className="text-gray-700 font-medium whitespace-nowrap">
+    <div className="bg-white/80 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-50 relative">
+      <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-gray-500 font-light tracking-wide uppercase">
             Find Birds near
           </span>
-          <div className="relative flex-1 max-w-xs">
+          <div className="relative">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="w-full px-4 py-2 text-left bg-gray-50 border border-gray-300 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent flex items-center justify-between"
+              className="px-5 py-2.5 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-full hover:border-gray-300 hover:shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-300 flex items-center gap-2"
             >
-              <span className={isUsingCurrentLocation ? "font-semibold text-blue-600" : ""}>
+              <span className={isUsingCurrentLocation ? "text-gray-900" : "text-gray-700"}>
                 {displayText}
               </span>
               <svg
-                className={`w-5 h-5 text-gray-500 transition-transform ${
+                className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
                   isOpen ? "rotate-180" : ""
                 }`}
                 fill="none"
@@ -81,21 +81,21 @@ export function LocationBar({
                   className="fixed inset-0 z-10"
                   onClick={() => setIsOpen(false)}
                 />
-                <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-96 overflow-auto">
+                <div className="absolute z-20 w-56 mt-2 bg-white border border-gray-200 rounded-2xl shadow-xl max-h-96 overflow-auto">
                   <button
                     onClick={() => {
                       onUseCurrentLocation();
                       setIsOpen(false);
                     }}
-                    className={`w-full px-4 py-2 text-left hover:bg-gray-100 ${
+                    className={`w-full px-4 py-3 text-left text-sm transition-colors ${
                       isUsingCurrentLocation
-                        ? "bg-blue-50 font-semibold text-blue-600"
-                        : ""
+                        ? "bg-gray-50 text-gray-900 font-medium"
+                        : "text-gray-700 hover:bg-gray-50"
                     }`}
                   >
                     My Current Location
                   </button>
-                  <div className="border-t border-gray-200" />
+                  <div className="border-t border-gray-100" />
                   {ONTARIO_CITIES.map((city) => (
                     <button
                       key={city.id}
@@ -103,11 +103,11 @@ export function LocationBar({
                         onLocationChange(city);
                         setIsOpen(false);
                       }}
-                      className={`w-full px-4 py-2 text-left hover:bg-gray-100 ${
+                      className={`w-full px-4 py-3 text-left text-sm transition-colors ${
                         !isUsingCurrentLocation &&
                         currentLocation?.id === city.id
-                          ? "bg-blue-50 font-semibold text-blue-600"
-                          : ""
+                          ? "bg-gray-50 text-gray-900 font-medium"
+                          : "text-gray-700 hover:bg-gray-50"
                       }`}
                     >
                       {city.name}
