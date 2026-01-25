@@ -46,3 +46,10 @@ body {
   filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.6));
   z-index: 1000 !important;
 }
+
+/* User location marker styling - ensure it's visible */
+.leaflet-marker-icon.user-location-marker {
+  background: transparent !important;
+  border: none !important;
+  z-index: 1001 !important;
+}
