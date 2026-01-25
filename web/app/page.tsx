@@ -7,9 +7,6 @@ import { API_ENDPOINTS } from "@/lib/constants";
 import type { Observation, Spot } from "@/lib/types";
 import { LocationBar, type LocationOption } from "@/components/map/LocationBar";
 import { BirdInfoModal } from "@/components/bird/BirdInfoModal";
-import { Birdle } from "@/components/birdle/Birdle";
-import { FlappyBird } from "@/components/flappy/FlappyBird";
-import { AngryBirds } from "@/components/angry/AngryBirds";
 
 const MapView = dynamic(() => import("@/components/map/MapView"), {
   ssr: false,
@@ -141,26 +138,37 @@ export default function Page() {
   );
 
   return (
-    <main className="min-h-screen">
-      {/* Hero Header */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-emerald-50 via-teal-50/40 to-amber-50/30 border-b border-emerald-100/50">
-        <div className="absolute inset-0 opacity-[0.015]" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-        }}></div>
-        <div className="max-w-7xl mx-auto px-6 pt-8 pb-6 relative">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-900/20">
-              <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-4xl font-bold text-emerald-950 tracking-tight">
-                FindMyBird
-              </h1>
-              <p className="text-emerald-700/80 text-sm font-medium tracking-wide">
-                Discover birds near you in real-time
-              </p>
+    <main className="min-h-screen bg-stone-50">
+      {/* Hero Header - More Natural */}
+      <div className="relative overflow-hidden bg-gradient-to-b from-stone-100 via-emerald-50/30 to-stone-50 border-b border-stone-200/60">
+        <div className="max-w-6xl mx-auto px-6 pt-10 pb-8">
+          <div className="flex flex-col items-start">
+            <h1 className="text-4xl md:text-5xl font-serif text-stone-900 mb-3 tracking-tight">
+              FindMyBird
+            </h1>
+            <p className="text-lg text-stone-700 mb-6 max-w-2xl leading-relaxed">
+              A simple tool to find birds spotted near you. See what's been seen recently, explore local hotspots, and learn about the birds in your area.
+            </p>
+            <div className="flex flex-wrap gap-3 text-sm text-stone-600">
+              <span className="flex items-center gap-1.5">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Ontario, Canada
+              </span>
+              <span className="flex items-center gap-1.5">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Updated daily
+              </span>
+              <span className="flex items-center gap-1.5">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                eBird data
+              </span>
             </div>
           </div>
         </div>
@@ -185,7 +193,7 @@ export default function Page() {
           {/* Map Section */}
           {showMap && (
             <div className="w-1/2 flex-shrink-0">
-              <div className="h-[600px] rounded-3xl overflow-hidden shadow-2xl border border-emerald-200/30 bg-white ring-1 ring-emerald-100/20">
+              <div className="h-[600px] rounded-lg overflow-hidden border border-stone-200 bg-white">
                 <MapView
                   latitude={displayLat!}
                   longitude={displayLng!}
@@ -201,26 +209,26 @@ export default function Page() {
           {/* Birds and Spots List Section */}
           <div className={`${showMap ? "w-1/2" : "w-full"} flex flex-col`}>
             {/* Tab Navigation */}
-            <div className="flex gap-2 mb-6 bg-white/70 backdrop-blur-md p-1.5 rounded-2xl border border-emerald-200/40 shadow-sm">
+            <div className="flex gap-1 mb-6 border-b border-stone-200">
               <button
                 onClick={() => setActiveTab("birds")}
-                className={`flex-1 px-4 py-3 text-sm font-semibold rounded-xl transition-all ${
+                className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${
                   activeTab === "birds"
-                    ? "bg-gradient-to-br from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-900/20"
-                    : "text-emerald-800 hover:text-emerald-900 hover:bg-emerald-50/50"
+                    ? "text-stone-900 border-stone-900"
+                    : "text-stone-600 border-transparent hover:text-stone-900 hover:border-stone-300"
                 }`}
               >
                 Birds ({recentBirds.length})
               </button>
               <button
                 onClick={() => setActiveTab("spots")}
-                className={`flex-1 px-4 py-3 text-sm font-semibold rounded-xl transition-all ${
+                className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${
                   activeTab === "spots"
-                    ? "bg-gradient-to-br from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-900/20"
-                    : "text-emerald-800 hover:text-emerald-900 hover:bg-emerald-50/50"
+                    ? "text-stone-900 border-stone-900"
+                    : "text-stone-600 border-transparent hover:text-stone-900 hover:border-stone-300"
                 }`}
               >
-                Trending spots ({Math.min(25, spots.length)})
+                Hotspots ({Math.min(25, spots.length)})
               </button>
             </div>
 
@@ -228,19 +236,19 @@ export default function Page() {
             <div className="flex-1 overflow-y-auto">
               {geoLoading && (
                 <div className="text-center py-12">
-                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-3 border-emerald-200 border-t-emerald-600"></div>
-                  <p className="mt-4 text-sm font-medium text-emerald-700">Getting your location...</p>
+                  <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-stone-300 border-t-stone-600"></div>
+                  <p className="mt-3 text-sm text-stone-600">Getting your location...</p>
                 </div>
               )}
               {loading && !geoLoading && (
                 <div className="text-center py-12">
-                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-3 border-emerald-200 border-t-emerald-600"></div>
-                  <p className="mt-4 text-sm font-medium text-emerald-700">Loading data...</p>
+                  <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-stone-300 border-t-stone-600"></div>
+                  <p className="mt-3 text-sm text-stone-600">Loading data...</p>
                 </div>
               )}
               {error && !loading && (
-                <div className="bg-red-50 border border-red-200/60 rounded-2xl p-4 shadow-sm">
-                  <p className="text-sm font-medium text-red-700">{error}</p>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <p className="text-sm text-red-700">{error}</p>
                 </div>
               )}
 
@@ -248,11 +256,8 @@ export default function Page() {
               {activeTab === "birds" && !loading && !geoLoading && (
                 <>
                   {recentBirds.length === 0 ? (
-                    <div className="text-center py-12 bg-white/50 rounded-2xl border border-emerald-100/50">
-                      <svg className="w-16 h-16 mx-auto text-emerald-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
-                      <p className="text-sm font-medium text-emerald-600">No birds found. Try a different location.</p>
+                    <div className="text-center py-12">
+                      <p className="text-sm text-stone-600">No birds found. Try a different location or increase the search radius.</p>
                     </div>
                   ) : (
                     <div className="max-h-[530px] overflow-y-auto space-y-3 pr-2 pb-2">
@@ -280,14 +285,14 @@ export default function Page() {
                             tabIndex={0}
                             onClick={() => setSelectedSpeciesCode(bird.speciesCode)}
                             onKeyDown={(e) => e.key === "Enter" && setSelectedSpeciesCode(bird.speciesCode)}
-                            className="group p-4 bg-white rounded-2xl border border-emerald-100/40 hover:border-emerald-300/60 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 flex gap-4 items-center cursor-pointer"
+                            className="group p-4 bg-white rounded-lg border border-stone-200 hover:border-stone-300 hover:shadow-sm transition-all flex gap-4 items-center cursor-pointer"
                           >
                             {bird.imageUrl ? (
                               <>
                                 <img
                                   src={bird.imageUrl}
                                   alt={bird.commonName}
-                                  className="w-20 h-20 object-cover rounded-xl border-2 border-emerald-100 shadow-md group-hover:shadow-lg transition-shadow"
+                                  className="w-16 h-16 object-cover rounded border border-stone-200"
                                   onError={(e) => {
                                     console.error(`Failed to load image for ${bird.commonName}: ${bird.imageUrl}`);
                                     e.currentTarget.style.display = 'none';
@@ -295,20 +300,20 @@ export default function Page() {
                                     if (placeholder) placeholder.style.display = 'flex';
                                   }}
                                 />
-                                <div className="w-20 h-20 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-xl flex items-center justify-center text-xs font-medium text-emerald-700 border-2 border-emerald-100" style={{ display: 'none' }}>
+                                <div className="w-16 h-16 bg-stone-100 rounded flex items-center justify-center text-xs text-stone-500 border border-stone-200" style={{ display: 'none' }}>
                                   No photo
                                 </div>
                               </>
                             ) : (
-                              <div className="w-20 h-20 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-xl flex items-center justify-center text-xs font-medium text-emerald-700 border-2 border-emerald-100">
+                              <div className="w-16 h-16 bg-stone-100 rounded flex items-center justify-center text-xs text-stone-500 border border-stone-200">
                                 No photo
                               </div>
                             )}
 
                             <div className="flex-1">
-                              <div className="font-semibold text-emerald-950 group-hover:text-emerald-700 transition-colors">{bird.commonName}</div>
+                              <div className="font-medium text-stone-900">{bird.commonName}</div>
                             </div>
-                            <div className="text-xs font-medium text-emerald-600/70 ml-2 whitespace-nowrap bg-emerald-50/50 px-2.5 py-1 rounded-full">{timeAgo}</div>
+                            <div className="text-xs text-stone-500 ml-2 whitespace-nowrap">{timeAgo}</div>
                           </div>
                         );
                       })}
@@ -321,12 +326,8 @@ export default function Page() {
               {activeTab === "spots" && !loading && !geoLoading && (
                 <>
                   {spots.length === 0 ? (
-                    <div className="text-center py-12 bg-white/50 rounded-2xl border border-emerald-100/50">
-                      <svg className="w-16 h-16 mx-auto text-emerald-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      <p className="text-sm font-medium text-emerald-600">No Trending spots found.</p>
+                    <div className="text-center py-12">
+                      <p className="text-sm text-stone-600">No hotspots found. Try a different location.</p>
                     </div>
                   ) : (
                     <>
@@ -335,17 +336,17 @@ export default function Page() {
                           <div
                             key={spot.locId}
                             onClick={() => setSelectedSpotId(spot.locId)}
-                            className={`group p-4 bg-white rounded-2xl border transition-all duration-200 cursor-pointer flex gap-3 items-center ${
+                            className={`p-4 bg-white rounded-lg border transition-all cursor-pointer flex gap-3 items-center ${
                               selectedSpotId === spot.locId
-                                ? "border-teal-400 shadow-xl ring-2 ring-teal-200/50 -translate-y-0.5"
-                                : "border-emerald-100/40 hover:border-emerald-300/60 hover:shadow-xl hover:-translate-y-0.5"
+                                ? "border-stone-400 shadow-md"
+                                : "border-stone-200 hover:border-stone-300 hover:shadow-sm"
                             }`}
                           >
                             {spot.imageUrl && (
                               <img
                                 src={spot.imageUrl}
                                 alt={spot.locName}
-                                className="w-24 h-24 object-cover rounded-xl border-2 border-emerald-100 shadow-md group-hover:shadow-lg transition-shadow flex-shrink-0"
+                                className="w-20 h-20 object-cover rounded border border-stone-200 flex-shrink-0"
                                 onError={(e) => {
                                   e.currentTarget.style.display = 'none';
                                 }}
@@ -353,8 +354,8 @@ export default function Page() {
                               />
                             )}
                             <div className="flex-1 min-w-0">
-                              <div className="font-semibold text-emerald-950 mb-1.5 group-hover:text-emerald-700 transition-colors">{spot.locName}</div>
-                              <div className="text-xs font-medium text-emerald-600/70 bg-emerald-50/50 px-2.5 py-1 rounded-full inline-block">{spot.numSpeciesAllTime} species recorded</div>
+                              <div className="font-medium text-stone-900 mb-1">{spot.locName}</div>
+                              <div className="text-xs text-stone-600">{spot.numSpeciesAllTime} species recorded</div>
                             </div>
                           </div>
                         ))}
@@ -370,7 +371,7 @@ export default function Page() {
                               setSpotsToShow(Math.min(25, spots.length));
                             }
                           }}
-                          className="mt-4 w-full px-4 py-3 text-sm font-semibold text-emerald-800 bg-white hover:bg-emerald-50 rounded-2xl border border-emerald-200/50 hover:border-emerald-300 transition-all shadow-sm hover:shadow-md"
+                          className="mt-4 w-full px-4 py-2 text-sm font-medium text-stone-700 bg-white hover:bg-stone-50 rounded-lg border border-stone-300 hover:border-stone-400 transition-colors"
                         >
                           {spotsToShow === 5 && `Show top 15 (${Math.min(15, spots.length)})`}
                           {spotsToShow === 15 && `Show top 25 (${Math.min(25, spots.length)})`}
@@ -394,18 +395,26 @@ export default function Page() {
         </div>
       </div>
 
-      {/* Games Section */}
-      <div className="max-w-7xl mx-auto px-6 pb-12">
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-emerald-900 mb-2">Play Bird Games</h2>
-          <p className="text-sm text-emerald-700/70 font-medium">Take a break and enjoy these fun bird-themed games</p>
-        </div>
-        <div className="flex gap-4 justify-center items-center">
-          <Birdle />
-          <FlappyBird />
-          <AngryBirds />
+      {/* About Section - More Natural */}
+      <div className="bg-stone-50/50 border-y border-stone-200/40 py-10">
+        <div className="max-w-3xl mx-auto px-6">
+          <h2 className="text-2xl font-serif text-stone-900 mb-4">About</h2>
+          <div className="prose prose-stone max-w-none text-stone-700 leading-relaxed space-y-4">
+            <p>
+              This site pulls data from eBird, a global database of bird observations maintained by the Cornell Lab of Ornithology. 
+              It shows you recent sightings in your area, helping you discover what birds are around and where to find them.
+            </p>
+            <p>
+              The map shows birding hotspots—places where many species have been recorded over time. Click on any hotspot to see 
+              how many species have been seen there. The bird list shows recent observations from the past week, with photos when available.
+            </p>
+            <p className="text-sm text-stone-600 italic">
+              Data is updated daily from eBird. All observations are submitted by birders in the community.
+            </p>
+          </div>
         </div>
       </div>
+
 
       {selectedSpeciesCode && (
         <BirdInfoModal
