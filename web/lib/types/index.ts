@@ -8,6 +8,7 @@ export type Coordinates = {
   lng: number;
 };
 
+
 export type Observation = {
   id: string;
   speciesCode: string;
@@ -33,3 +34,10 @@ export type Spot = {
   numObservations: number;
   imageUrl?: string | null;
 };
+// ...existing code...
+export const API_ENDPOINTS = {
+  EBIRD_RECENT: "/api/ebird/recent",
+  EBIRD_HOTSPOTS: "/api/ebird/hotspots",
+  EBIRD_PHOTO: "/api/ebird/photo", // Add this line
+};
+// ...existing code...
