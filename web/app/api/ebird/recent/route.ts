@@ -12,71 +12,80 @@ async function getBirdPhoto(speciesCode: string, commonName?: string, scientific
     let imageUrl: string | null = null;
 
     // Method 1: Try Wikipedia/Wikimedia Commons first (more reliable)
+    // Build comprehensive search variations
+    const searchVariations: string[] = [];
+    
     if (commonName) {
-      // Try multiple search variations to find the correct bird page
-      // Start with "(bird)" variation first for ambiguous names like "redhead"
-      const searchVariations = [
-        `${commonName} (bird)`, // Try with "(bird)" suffix first (most reliable for bird pages)
-        `${commonName} bird`, // Try with " bird" suffix
-        commonName, // Try exact name last (may return non-bird results)
-      ];
+      // Try common name variations first
+      searchVariations.push(
+        `${commonName} (bird)`, // Most reliable format
+        `${commonName} bird`,
+        commonName
+      );
+    }
+    
+    // Also try scientific name - often more reliable for Wikipedia
+    if (scientificName) {
+      searchVariations.push(scientificName);
+      // Try with "bird" suffix for scientific name too
+      if (!scientificName.toLowerCase().includes('bird')) {
+        searchVariations.push(`${scientificName} bird`);
+      }
+    }
 
-      for (const searchTerm of searchVariations) {
-        try {
-          const wikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(searchTerm.replace(/\s+/g, '_'))}`;
-          const wikiRes = await fetch(wikiUrl, {
-            headers: {
-              "User-Agent": "find-my-bird/1.0",
-            },
-          });
+    for (const searchTerm of searchVariations) {
+      try {
+        const wikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(searchTerm.replace(/\s+/g, '_'))}`;
+        const wikiRes = await fetch(wikiUrl, {
+          headers: {
+            "User-Agent": "find-my-bird/1.0",
+          },
+        });
 
-          if (wikiRes.ok) {
-            const wikiData = await wikiRes.json();
-            // Verify it's actually about a bird
-            const isDisambiguation = wikiData.type === 'disambiguation' || wikiData.title.toLowerCase().includes('disambiguation');
-            const isStandardPage = wikiData.type === 'standard';
+        if (wikiRes.ok) {
+          const wikiData = await wikiRes.json();
+          // Verify it's actually about a bird
+          const isDisambiguation = wikiData.type === 'disambiguation' || wikiData.title.toLowerCase().includes('disambiguation');
+          const isStandardPage = wikiData.type === 'standard';
+          
+          // Check if page is clearly NOT about a bird (for exact name searches)
+          const title = wikiData.title?.toLowerCase() || '';
+          const extract = wikiData.extract?.toLowerCase() || '';
+          const hasBirdInTitle = title.includes('(bird)') || title.includes(' bird');
+          
+          // For exact common name search, only reject if we can clearly tell it's NOT a bird
+          if (searchTerm === commonName && !hasBirdInTitle) {
+            const isPersonPage = extract.includes('person') || extract.includes('human') || 
+                                 extract.includes('character') || extract.includes('actor') ||
+                                 extract.includes('singer') || extract.includes('musician') ||
+                                 title.includes('(person)') || title.includes('(character)');
             
-            // Check if page is clearly NOT about a bird (for exact name searches)
-            const title = wikiData.title?.toLowerCase() || '';
-            const extract = wikiData.extract?.toLowerCase() || '';
-            const hasBirdInTitle = title.includes('(bird)') || title.includes(' bird');
-            
-            // For exact name search, only reject if we can clearly tell it's NOT a bird
-            // Accept pages with "(bird)" in title, or if extract mentions bird-related terms
-            // Only reject if it's clearly about a person/character/etc.
-            if (searchTerm === commonName && !hasBirdInTitle) {
-              const isPersonPage = extract.includes('person') || extract.includes('human') || 
-                                   extract.includes('character') || extract.includes('actor') ||
-                                   extract.includes('singer') || extract.includes('musician') ||
-                                   title.includes('(person)') || title.includes('(character)');
-              
-              // If it's clearly about a person/character and not a bird, skip it
-              if (isPersonPage && !extract.includes('bird') && !extract.includes('species') && !extract.includes('avian')) {
-                continue; // Skip clearly non-bird pages
-              }
-            }
-            
-            if (isStandardPage && !isDisambiguation) {
-              // Prefer originalimage over thumbnail (higher quality, direct URL)
-              imageUrl = wikiData?.originalimage?.source || wikiData?.thumbnail?.source || null;
-              if (imageUrl) {
-                // Wikipedia URLs work directly - both thumbnail and originalimage URLs are valid
-                console.log(`✓ Found Wikipedia image for ${speciesCode} (${commonName}) using search: "${searchTerm}": ${imageUrl.substring(0, 100)}...`);
-                photoCache.set(speciesCode, imageUrl);
-                return imageUrl;
-              }
+            // If it's clearly about a person/character and not a bird, skip it
+            if (isPersonPage && !extract.includes('bird') && !extract.includes('species') && !extract.includes('avian')) {
+              continue; // Skip clearly non-bird pages
             }
           }
-        } catch (e) {
-          // Try next variation
-          continue;
+          
+          if (isStandardPage && !isDisambiguation) {
+            // Prefer originalimage over thumbnail (higher quality, direct URL)
+            imageUrl = wikiData?.originalimage?.source || wikiData?.thumbnail?.source || null;
+            if (imageUrl) {
+              // Wikipedia URLs work directly - both thumbnail and originalimage URLs are valid
+              console.log(`✓ Found Wikipedia image for ${speciesCode} (${commonName}) using search: "${searchTerm}": ${imageUrl.substring(0, 100)}...`);
+              photoCache.set(speciesCode, imageUrl);
+              return imageUrl;
+            }
+          }
         }
+      } catch (e) {
+        // Try next variation
+        continue;
       }
     }
 
     // Method 2: Try Macaulay Library search API with taxonCode
     try {
-      const url = `https://search.macaulaylibrary.org/api/v1/search?taxonCode=${encodeURIComponent(speciesCode)}&mediaType=photo&pageSize=1&sort=rating_rank_desc`;
+      const url = `https://search.macaulaylibrary.org/api/v1/search?taxonCode=${encodeURIComponent(speciesCode)}&mediaType=photo&pageSize=5&sort=rating_rank_desc`;
 
       const res = await fetch(url, {
         headers: {
@@ -87,12 +96,6 @@ async function getBirdPhoto(speciesCode: string, commonName?: string, scientific
 
       if (res.ok) {
         const json = await res.json();
-
-        // Debug: log the full response structure for first request
-        if (!photoCache.has('_debug_logged')) {
-          console.log(`Macaulay Library API response for ${speciesCode}:`, JSON.stringify(json, null, 2).slice(0, 1000));
-          photoCache.set('_debug_logged', 'true');
-        }
 
         const results = json?.results || json?.data || json || [];
         const result = Array.isArray(results) ? results[0] : results;
@@ -113,26 +116,33 @@ async function getBirdPhoto(speciesCode: string, commonName?: string, scientific
             imageUrl = result.thumbnail.url || result.thumbnail.mediaUrl || null;
           }
 
-          // Try constructing from asset ID
+          // Try constructing from asset ID - Macaulay Library uses ML IDs
           const assetId = result.assetId || result.id || result.mediaId || result.asset?.id;
           if (!imageUrl && assetId) {
-            const numericId = String(assetId).replace(/^ML/i, '');
-            if (/^\d+$/.test(numericId)) {
-              imageUrl = `https://cdn.download.ams.birds.cornell.edu/api/v2/asset/${numericId}/thumb/640`;
+            const idStr = String(assetId);
+            // Handle both "ML123456" format and numeric IDs
+            const numericId = idStr.replace(/^ML/i, '').replace(/[^0-9]/g, '');
+            if (numericId && /^\d+$/.test(numericId)) {
+              // Try multiple Macaulay Library URL formats
+              const urlFormats = [
+                `https://cdn.download.ams.birds.cornell.edu/api/v2/asset/${numericId}/thumb/640`,
+                `https://cdn.download.ams.birds.cornell.edu/api/v2/asset/${numericId}/thumb/1024`,
+                `https://cdn.download.ams.birds.cornell.edu/api/v2/asset/${numericId}/thumb/320`,
+              ];
+              // Try first format (most common)
+              imageUrl = urlFormats[0];
             }
           }
 
           if (imageUrl) {
-            console.log(`✓ Found Macaulay Library image for ${speciesCode}`);
-          } else {
-            console.warn(`No image URL found for ${speciesCode} in Macaulay Library. Available keys:`, Object.keys(result));
+            console.log(`✓ Found Macaulay Library image for ${speciesCode} (${commonName || 'unknown'})`);
+            photoCache.set(speciesCode, imageUrl);
+            return imageUrl;
           }
         }
-      } else {
-        console.error(`Macaulay Library API error for ${speciesCode}: ${res.status} ${res.statusText}`);
       }
     } catch (e) {
-      console.error(`Error querying Macaulay Library for ${speciesCode}:`, e);
+      // Silently continue - Macaulay Library is optional
     }
 
     // Ensure URL is absolute
