@@ -5,13 +5,12 @@ import { useState, useEffect } from "react";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { API_ENDPOINTS } from "@/lib/constants";
 import type { Observation, Spot } from "@/lib/types";
+import { LocationBar, type LocationOption } from "@/components/map/LocationBar";
 
 const MapView = dynamic(() => import("@/components/map/MapView"), {
   ssr: false,
   loading: () => <div className="bg-gray-100 rounded flex items-center justify-center">Loading map...</div>,
 });
-
-
 
 export default function Page() {
   const { latitude, longitude, loading: geoLoading } = useGeolocation();
@@ -19,15 +18,13 @@ export default function Page() {
   const [error, setError] = useState("");
   const [observations, setObservations] = useState<Observation[]>([]);
   const [spots, setSpots] = useState<Spot[]>([]);
-  const [currentLat, setCurrentLat] = useState<number | null>(null);
-  const [currentLng, setCurrentLng] = useState<number | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<LocationOption | null>(null);
+  const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState(true);
   const [activeTab, setActiveTab] = useState<"birds" | "spots">("birds");
 
   async function loadAt(lat: number, lng: number) {
     setError("");
     setLoading(true);
-    setCurrentLat(lat);
-    setCurrentLng(lng);
     try {
       const [birdsRes, spotsRes] = await Promise.all([
         fetch(
@@ -64,20 +61,41 @@ export default function Page() {
     }
   }
 
-  // Load birds when geolocation is available
+  const handleLocationChange = (location: LocationOption) => {
+    setSelectedLocation(location);
+    setIsUsingCurrentLocation(false);
+    loadAt(location.latitude, location.longitude);
+  };
+
+  const handleUseCurrentLocation = () => {
+    setSelectedLocation(null);
+    setIsUsingCurrentLocation(true);
+    if (latitude != null && longitude != null) {
+      loadAt(latitude, longitude);
+    }
+  };
+
+  // Load birds when geolocation is available (only if using current location)
   useEffect(() => {
-    if (latitude != null && longitude != null && currentLat === null) {
+    if (isUsingCurrentLocation && latitude != null && longitude != null && !loading) {
       loadAt(latitude, longitude);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [latitude, longitude]);
+  }, [latitude, longitude, isUsingCurrentLocation]);
 
-  const displayLat = currentLat ?? latitude;
-  const displayLng = currentLng ?? longitude;
+  // Determine which coordinates to use
+  const displayLat = isUsingCurrentLocation ? latitude : selectedLocation?.latitude;
+  const displayLng = isUsingCurrentLocation ? longitude : selectedLocation?.longitude;
   const showMap = displayLat != null && displayLng != null;
 
   return (
     <main className="flex flex-col bg-gray-50 min-h-screen">
+      <LocationBar
+        currentLocation={selectedLocation}
+        onLocationChange={handleLocationChange}
+        onUseCurrentLocation={handleUseCurrentLocation}
+        isUsingCurrentLocation={isUsingCurrentLocation}
+      />
       <div className="bg-white border-b border-gray-200 p-6 sticky top-0 z-10">
         <h1 className="text-4xl font-bold mb-2">Find My Bird</h1>
         <p className="text-lg text-gray-600 mb-4">Discover bird sightings near you</p>
