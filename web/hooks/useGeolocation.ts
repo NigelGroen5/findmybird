@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Coordinates } from "@/lib/types";
 
 type GeolocationState = {
   latitude: number | null;

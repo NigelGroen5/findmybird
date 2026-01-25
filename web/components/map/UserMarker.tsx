@@ -16,6 +16,7 @@ type UserMarkerProps = {
 export default function UserMarker({ latitude, longitude }: UserMarkerProps) {
   useEffect(() => {
     // Fix for default marker icon issue in Next.js
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (Icon.Default.prototype as any)._getIconUrl;
     Icon.Default.mergeOptions({
       iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",

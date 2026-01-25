@@ -12,6 +12,11 @@ export type Observation = {
   commonName: string;
   imageUrl?: string | null;
   // Add more fields as needed
+  comName: string;
+  sciName?: string;
+  obsDt: string; 
+  locName?: string;
+  howMany?: number;
 };
 
 export type Spot = {

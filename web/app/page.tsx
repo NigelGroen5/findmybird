@@ -112,6 +112,18 @@ export default function Page() {
   const displayLng = isUsingCurrentLocation ? longitude : selectedLocation?.longitude;
   const showMap = displayLat != null && displayLng != null;
 
+  const uniqueBirds = observations.reduce((acc, obs) => {
+    const existing = acc.get(obs.comName);
+    if (!existing || new Date(obs.obsDt) > new Date(existing.obsDt)) {
+      acc.set(obs.comName, obs);
+    }
+    return acc;
+  }, new Map<string, Observation>());
+
+  const recentBirds = Array.from(uniqueBirds.values()).sort(
+    (a, b) => new Date(b.obsDt).getTime() - new Date(a.obsDt).getTime()
+  );
+
   return (
     <main className="min-h-screen bg-gray-50/50">
       <LocationBar
@@ -144,7 +156,7 @@ export default function Page() {
                     : "text-gray-600 hover:text-gray-900"
                 }`}
               >
-                Birds ({observations.length})
+                Birds ({recentBirds.length})
               </button>
               <button
                 onClick={() => setActiveTab("spots")}
@@ -181,7 +193,7 @@ export default function Page() {
               {/* Birds Tab */}
               {activeTab === "birds" && !loading && !geoLoading && (
                 <>
-                  {observations.length === 0 ? (
+                  {recentBirds.length === 0 ? (
                     <div className="text-center py-12">
                       <p className="text-sm text-gray-400">No birds found. Try a different location.</p>
                     </div>
@@ -220,6 +232,40 @@ export default function Page() {
                           </div>
                         </div>
                       ))}
+                      {recentBirds.map((bird, i) => {
+                        const observationDate = new Date(bird.obsDt);
+                        const now = new Date();
+                        const diffHours = Math.floor((now.getTime() - observationDate.getTime()) / (1000 * 60 * 60));
+                        const diffDays = Math.floor(diffHours / 24);
+
+                        let timeAgo = '';
+                        if (diffHours < 1) {
+                          timeAgo = 'Just now';
+                        } else if (diffHours < 24) {
+                          timeAgo = `${diffHours}h ago`;
+                        } else if (diffDays === 1) {
+                          timeAgo = 'Yesterday';
+                        } else {
+                          timeAgo = `${diffDays}d ago`;
+                        }
+
+                        return (
+                          <div
+                            key={i}
+                            className="p-4 bg-white rounded-xl border border-gray-200/50 hover:border-gray-300 hover:shadow-sm transition-all"
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="font-medium text-gray-900">{bird.comName}</div>
+                                {bird.locName && (
+                                  <div className="text-xs text-gray-500 mt-0.5">{bird.locName}</div>
+                                )}
+                              </div>
+                              <div className="text-xs text-gray-500 ml-2 whitespace-nowrap">{timeAgo}</div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </>
