@@ -32,7 +32,6 @@ html,
 body {
   height: 100%;
   width: 100%;
-  overflow: hidden;
 }
 
 /* Ensure Leaflet map container displays correctly */
