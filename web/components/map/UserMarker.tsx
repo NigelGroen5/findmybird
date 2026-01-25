@@ -1,11 +1,8 @@
 "use client";
 
 import { Marker, Popup } from "react-leaflet";
-<<<<<<< HEAD
-=======
 import { divIcon } from "leaflet";
 import { useMemo } from "react";
->>>>>>> 2e7af039b6adc4867d48e89edf0c74f24cd74d57
 
 type UserMarkerProps = {
   latitude: number;
@@ -14,10 +11,6 @@ type UserMarkerProps = {
 
 /**
  * UserMarker component - Displays a marker at the user's location
-<<<<<<< HEAD
- */
-export default function UserMarker({ latitude, longitude }: UserMarkerProps) {
-=======
  * Uses a custom blue divIcon to distinguish from hotspot markers
  */
 export default function UserMarker({ latitude, longitude }: UserMarkerProps) {
@@ -53,7 +46,6 @@ export default function UserMarker({ latitude, longitude }: UserMarkerProps) {
     });
   }, []);
 
->>>>>>> 2e7af039b6adc4867d48e89edf0c74f24cd74d57
   return (
     <Marker position={[latitude, longitude]} icon={userIcon}>
       <Popup>
