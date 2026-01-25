@@ -8,6 +8,7 @@ import type { Observation, Spot } from "@/lib/types";
 import { LocationBar, type LocationOption } from "@/components/map/LocationBar";
 import { Birdle } from "@/components/birdle/Birdle";
 import { FlappyBird } from "@/components/flappy/FlappyBird";
+import { AngryBirds } from "@/components/angry/AngryBirds";
 
 const MapView = dynamic(() => import("@/components/map/MapView"), {
   ssr: false,
@@ -358,6 +359,7 @@ export default function Page() {
       <div className="flex gap-4 justify-center items-center pb-8">
         <Birdle />
         <FlappyBird />
+        <AngryBirds />
       </div>
     </main>
   );
