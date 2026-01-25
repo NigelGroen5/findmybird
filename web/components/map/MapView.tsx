@@ -2,11 +2,22 @@
 
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import { useEffect } from "react";
+import { Icon } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Spot } from "@/lib/types";
 
 import UserMarker from "./UserMarker";
 import RadiusCircle from "./RadiusCircle";
+
+// Fix Leaflet default icon paths for Next.js (must be done before any markers are created)
+if (typeof window !== "undefined") {
+  delete (Icon.Default.prototype as any)._getIconUrl;
+  Icon.Default.mergeOptions({
+    iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+    iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+    shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  });
+}
 
 // Component to update map center when props change
 function ChangeView({ center }: { center: [number, number] }) {

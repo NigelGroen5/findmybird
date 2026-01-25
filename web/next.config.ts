@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
       "cdn.download.ams.birds.cornell.edu",
       "search.macaulaylibrary.org",
       "macaulaylibrary.org",
+      "upload.wikimedia.org",
     ],
     remotePatterns: [
       {
@@ -20,6 +21,10 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "macaulaylibrary.org",
+      },
+      {
+        protocol: "https",
+        hostname: "upload.wikimedia.org",
       },
     ],
   },

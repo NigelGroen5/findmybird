@@ -20,22 +20,20 @@ async function getBirdPhoto(speciesCode: string, commonName?: string, scientific
             "User-Agent": "find-my-bird/1.0",
           },
         });
-        
+
         if (wikiRes.ok) {
           const wikiData = await wikiRes.json();
           // Verify it's actually about a bird (check if it's a disambiguation or wrong page)
-          if (wikiData.type === 'standard' && !wikiData.title.toLowerCase().includes('disambiguation')) {
-            imageUrl = wikiData?.thumbnail?.source || wikiData?.originalimage?.source || null;
-            if (imageUrl) {
-              // Resize Wikipedia thumbnail to a reasonable size
-              if (imageUrl.includes('thumb/')) {
-                imageUrl = imageUrl.replace(/\/\d+px-/, '/300px-');
+            if (wikiData.type === 'standard' && !wikiData.title.toLowerCase().includes('disambiguation')) {
+              // Prefer originalimage over thumbnail (higher quality, direct URL)
+              imageUrl = wikiData?.originalimage?.source || wikiData?.thumbnail?.source || null;
+              if (imageUrl) {
+                // Wikipedia URLs work directly - both thumbnail and originalimage URLs are valid
+                console.log(`✓ Found Wikipedia image for ${speciesCode} (${commonName}): ${imageUrl.substring(0, 100)}...`);
+                photoCache.set(speciesCode, imageUrl);
+                return imageUrl;
               }
-              console.log(`✓ Found Wikipedia image for ${speciesCode} (${commonName})`);
-              photoCache.set(speciesCode, imageUrl);
-              return imageUrl;
             }
-          }
         }
       } catch (e) {
         // Continue to next method
@@ -45,7 +43,7 @@ async function getBirdPhoto(speciesCode: string, commonName?: string, scientific
     // Method 2: Try Macaulay Library search API with taxonCode
     try {
       const url = `https://search.macaulaylibrary.org/api/v1/search?taxonCode=${encodeURIComponent(speciesCode)}&mediaType=photo&pageSize=1&sort=rating_rank_desc`;
-      
+
       const res = await fetch(url, {
         headers: {
           "User-Agent": "find-my-bird",
@@ -55,21 +53,21 @@ async function getBirdPhoto(speciesCode: string, commonName?: string, scientific
 
       if (res.ok) {
         const json = await res.json();
-        
+
         // Debug: log the full response structure for first request
         if (!photoCache.has('_debug_logged')) {
           console.log(`Macaulay Library API response for ${speciesCode}:`, JSON.stringify(json, null, 2).slice(0, 1000));
           photoCache.set('_debug_logged', 'true');
         }
-        
+
         const results = json?.results || json?.data || json || [];
         const result = Array.isArray(results) ? results[0] : results;
-        
+
         if (result) {
           // Try all possible field names
-          imageUrl = result.mediaUrl || result.assetUrl || result.url || result.downloadUrl 
+          imageUrl = result.mediaUrl || result.assetUrl || result.url || result.downloadUrl
             || result.thumbnailUrl || result.imageUrl || result.photoUrl || null;
-          
+
           // Check nested objects
           if (!imageUrl && result.media) {
             imageUrl = result.media.url || result.media.mediaUrl || result.media.assetUrl || null;
@@ -80,7 +78,7 @@ async function getBirdPhoto(speciesCode: string, commonName?: string, scientific
           if (!imageUrl && result.thumbnail) {
             imageUrl = result.thumbnail.url || result.thumbnail.mediaUrl || null;
           }
-          
+
           // Try constructing from asset ID
           const assetId = result.assetId || result.id || result.mediaId || result.asset?.id;
           if (!imageUrl && assetId) {
@@ -89,7 +87,7 @@ async function getBirdPhoto(speciesCode: string, commonName?: string, scientific
               imageUrl = `https://cdn.download.ams.birds.cornell.edu/api/v2/asset/${numericId}/thumb/640`;
             }
           }
-          
+
           if (imageUrl) {
             console.log(`✓ Found Macaulay Library image for ${speciesCode}`);
           } else {
@@ -226,16 +224,16 @@ export async function GET(req: Request) {
     }
   });
 
-  // Attach photos (limit unique species to avoid spam)
+  // Attach photos for all unique species
   const uniqueSpecies = Array.from(
     new Set(data.map((o: any) => o.speciesCode))
-  ).slice(0, 20);
+  );
 
   const photoMap = new Map<string, string | null>();
-  
+
 
   const photoDebug: Record<string, { found: boolean; url: string | null }> = {};
-  
+
   // Fetch photos with timeout to prevent blocking
   try {
     await Promise.all(
@@ -248,7 +246,7 @@ export async function GET(req: Request) {
               speciesInfo?.commonName,
               speciesInfo?.scientificName
             ),
-            new Promise<string | null>((resolve) => 
+            new Promise<string | null>((resolve) =>
               setTimeout(() => resolve(null), 5000) // 5 second timeout per photo
             )
           ]);
@@ -271,7 +269,7 @@ export async function GET(req: Request) {
     console.error('Error in photo fetching batch:', error);
     // Continue anyway - photos are optional
   }
-  
+
   // Log summary
   const foundCount = Object.values(photoDebug).filter(p => p.found).length;
   console.log(`Photo fetch summary: ${foundCount}/${uniqueSpecies.length} species have photos`);
@@ -338,4 +336,4 @@ export async function GET(req: Request) {
   });
 
 
-  }
+}
