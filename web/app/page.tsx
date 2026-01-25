@@ -21,6 +21,8 @@ export default function Page() {
   const [selectedLocation, setSelectedLocation] = useState<LocationOption | null>(null);
   const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState(true);
   const [activeTab, setActiveTab] = useState<"birds" | "spots">("birds");
+  const [spotsToShow, setSpotsToShow] = useState(5);
+  const [selectedSpotId, setSelectedSpotId] = useState<string | null>(null);
 
   async function loadAt(lat: number, lng: number) {
     setError("");
@@ -76,7 +78,11 @@ export default function Page() {
         setObservations(obs);
       }
       
-      setSpots(spotsJson.spots || []);
+      // Sort spots by numSpeciesAllTime (highest to lowest)
+      const sortedSpots = (spotsJson.spots || []).sort((a: Spot, b: Spot) => {
+        return b.numSpeciesAllTime - a.numSpeciesAllTime;
+      });
+      setSpots(sortedSpots);
     } catch (e: unknown) {
       const err = e as Error;
       setError(err?.message || "Fetch failed");
@@ -88,12 +94,16 @@ export default function Page() {
   const handleLocationChange = (location: LocationOption) => {
     setSelectedLocation(location);
     setIsUsingCurrentLocation(false);
+    setSelectedSpotId(null);
+    setSpotsToShow(5);
     loadAt(location.latitude, location.longitude);
   };
 
   const handleUseCurrentLocation = () => {
     setSelectedLocation(null);
     setIsUsingCurrentLocation(true);
+    setSelectedSpotId(null);
+    setSpotsToShow(5);
     if (latitude != null && longitude != null) {
       loadAt(latitude, longitude);
     }
@@ -139,7 +149,13 @@ export default function Page() {
           {showMap && (
             <div className="w-1/2 flex-shrink-0">
               <div className="h-[600px] rounded-2xl overflow-hidden shadow-lg border border-gray-200/50 bg-white">
-                <MapView latitude={displayLat!} longitude={displayLng!} spots={spots} />
+                <MapView 
+              latitude={displayLat!} 
+              longitude={displayLng!} 
+              spots={spots}
+              selectedSpotId={selectedSpotId}
+              onSpotSelect={setSelectedSpotId}
+            />
               </div>
             </div>
           )}
@@ -264,17 +280,50 @@ export default function Page() {
                       <p className="text-sm text-gray-400">No hotspots found.</p>
                     </div>
                   ) : (
-                    <div className="space-y-2">
-                      {spots.map((spot) => (
-                        <div
-                          key={spot.locId}
-                          className="p-4 bg-white rounded-xl border border-gray-200/50 hover:border-gray-300 hover:shadow-sm transition-all"
+                    <>
+                      <div className="space-y-2">
+                        {spots.slice(0, spotsToShow).map((spot) => (
+                          <div
+                            key={spot.locId}
+                            onClick={() => setSelectedSpotId(spot.locId)}
+                            className={`p-4 bg-white rounded-xl border transition-all cursor-pointer ${
+                              selectedSpotId === spot.locId
+                                ? "border-blue-500 shadow-md ring-2 ring-blue-200"
+                                : "border-gray-200/50 hover:border-gray-300 hover:shadow-sm"
+                            }`}
+                          >
+                            <div className="font-medium text-gray-900 mb-1">{spot.locName}</div>
+                            <div className="text-xs text-gray-500">{spot.numSpeciesAllTime} species recorded</div>
+                          </div>
+                        ))}
+                      </div>
+                      {spots.length > spotsToShow && (
+                        <button
+                          onClick={() => {
+                            if (spotsToShow === 5) {
+                              setSpotsToShow(15);
+                            } else if (spotsToShow === 15) {
+                              setSpotsToShow(30);
+                            } else {
+                              setSpotsToShow(spots.length);
+                            }
+                          }}
+                          className="mt-4 w-full px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition-colors"
                         >
-                          <div className="font-medium text-gray-900 mb-1">{spot.locName}</div>
-                          <div className="text-xs text-gray-500">{spot.numSpeciesAllTime} species recorded</div>
-                        </div>
-                      ))}
-                    </div>
+                          {spotsToShow === 5 && `Show top 15 (${Math.min(15, spots.length)})`}
+                          {spotsToShow === 15 && `Show top 30 (${Math.min(30, spots.length)})`}
+                          {spotsToShow === 30 && spots.length > 30 && `Show all (${spots.length})`}
+                        </button>
+                      )}
+                      {spotsToShow > 5 && (
+                        <button
+                          onClick={() => setSpotsToShow(5)}
+                          className="mt-2 w-full px-4 py-2 text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors"
+                        >
+                          Show less
+                        </button>
+                      )}
+                    </>
                   )}
                 </>
               )}
