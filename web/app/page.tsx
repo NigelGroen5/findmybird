@@ -7,6 +7,7 @@ import { API_ENDPOINTS } from "@/lib/constants";
 import type { Observation, Spot } from "@/lib/types";
 import { LocationBar, type LocationOption } from "@/components/map/LocationBar";
 import { Birdle } from "@/components/birdle/Birdle";
+import { FlappyBird } from "@/components/flappy/FlappyBird";
 
 const MapView = dynamic(() => import("@/components/map/MapView"), {
   ssr: false,
@@ -24,17 +25,19 @@ export default function Page() {
   const [activeTab, setActiveTab] = useState<"birds" | "spots">("birds");
   const [spotsToShow, setSpotsToShow] = useState(5);
   const [selectedSpotId, setSelectedSpotId] = useState<string | null>(null);
+  const [radius, setRadius] = useState(10);
 
-  async function loadAt(lat: number, lng: number) {
+  async function loadAt(lat: number, lng: number, searchRadius?: number) {
+    const radiusToUse = searchRadius ?? radius;
     setError("");
     setLoading(true);
     try {
       const [birdsRes, spotsRes] = await Promise.all([
         fetch(
-          `${API_ENDPOINTS.EBIRD_RECENT}?lat=${lat}&lng=${lng}&dist=10&back=7`
+          `${API_ENDPOINTS.EBIRD_RECENT}?lat=${lat}&lng=${lng}&dist=${radiusToUse}&back=7`
         ),
         fetch(
-          `${API_ENDPOINTS.EBIRD_HOTSPOTS}?lat=${lat}&lng=${lng}&dist=10`
+          `${API_ENDPOINTS.EBIRD_HOTSPOTS}?lat=${lat}&lng=${lng}&dist=${radiusToUse}`
         ),
       ]);
 
@@ -55,7 +58,6 @@ export default function Page() {
       const birdsJson = await birdsRes.json();
       const spotsJson = await spotsRes.json();
       
-      // Debug: log full response
       console.log('Birds API Response:', birdsJson);
       
       // Check for errors in birds response
@@ -142,6 +144,13 @@ export default function Page() {
         onLocationChange={handleLocationChange}
         onUseCurrentLocation={handleUseCurrentLocation}
         isUsingCurrentLocation={isUsingCurrentLocation}
+        radius={radius}
+        onRadiusChange={(newRadius) => {
+          setRadius(newRadius);
+          if (displayLat != null && displayLng != null) {
+            loadAt(displayLat, displayLng, newRadius);
+          }
+        }}
       />
 
       <div className="max-w-7xl mx-auto px-6 py-8">
@@ -156,6 +165,7 @@ export default function Page() {
                   spots={spots.slice(0, spotsToShow)}
                   selectedSpotId={selectedSpotId}
                   onSpotSelect={setSelectedSpotId}
+                  radius={radius}
                 />
               </div>
             </div>
@@ -345,7 +355,10 @@ export default function Page() {
           </div>
         </div>
       </div>
-      <Birdle />
+      <div className="flex gap-4 justify-center items-center pb-8">
+        <Birdle />
+        <FlappyBird />
+      </div>
     </main>
   );
 }

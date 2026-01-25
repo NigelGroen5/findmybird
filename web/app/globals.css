@@ -52,4 +52,11 @@ body {
   background: transparent !important;
   border: none !important;
   z-index: 1001 !important;
+<<<<<<< HEAD
+=======
+}
+/* Hide Leaflet logo in bottom-left */
+.leaflet-control-attribution {
+  display: none !important;
+>>>>>>> 3fb05a9adacba33748c1fe8e733ea77f753dd593
 }
