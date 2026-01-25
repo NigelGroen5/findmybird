@@ -54,7 +54,31 @@ export default function Page() {
 
       const birdsJson = await birdsRes.json();
       const spotsJson = await spotsRes.json();
-      setObservations(birdsJson.observations || []);
+      
+      // Debug: log full response
+      console.log('Birds API Response:', birdsJson);
+      
+      // Check for errors in birds response
+      if (birdsJson.error) {
+        setError(`API Error: ${birdsJson.error}${birdsJson.details ? ` - ${birdsJson.details}` : ''}`);
+        setObservations([]);
+      } else {
+        const obs = birdsJson.observations || [];
+        
+        // Debug: log photo stats and sample imageUrls
+        if (birdsJson.meta?.photoStats) {
+          console.log('Photo stats:', birdsJson.meta.photoStats);
+        }
+        console.log(`Received ${obs.length} observations from API`);
+        const withPhotos = obs.filter((o: Observation) => o.imageUrl);
+        console.log(`${withPhotos.length} observations have imageUrl`);
+        if (withPhotos.length > 0) {
+          console.log('Sample imageUrls:', withPhotos.slice(0, 3).map((o: Observation) => ({ name: o.commonName, url: o.imageUrl })));
+        }
+        
+        setObservations(obs);
+      }
+      
       setSpots(spotsJson.spots || []);
     } catch (e: unknown) {
       const err = e as Error;
@@ -131,8 +155,36 @@ export default function Page() {
                 )}
                 <ul className="space-y-2">
                   {observations.map((o, i) => (
-                    <li key={i} className="p-3 bg-gray-50 rounded hover:bg-blue-50 transition">
-                      <div className="font-semibold text-gray-900">{o.comName}</div>
+                    <li
+                      key={i}
+                      className="p-3 bg-gray-50 rounded hover:bg-blue-50 transition flex gap-4 items-center"
+                    >
+                      {o.imageUrl ? (
+                        <>
+                          <img
+                            src={o.imageUrl}
+                            alt={o.commonName}
+                            className="w-16 h-16 object-cover rounded-md border"
+                            onError={(e) => {
+                              console.error(`Failed to load image for ${o.commonName}: ${o.imageUrl}`);
+                              e.currentTarget.style.display = 'none';
+                              const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
+                              if (placeholder) placeholder.style.display = 'flex';
+                            }}
+                          />
+                          <div className="w-16 h-16 bg-gray-200 rounded-md flex items-center justify-center text-xs text-gray-500" style={{ display: 'none' }}>
+                            No photo
+                          </div>
+                        </>
+                      ) : (
+                        <div className="w-16 h-16 bg-gray-200 rounded-md flex items-center justify-center text-xs text-gray-500">
+                          No photo
+                        </div>
+                      )}
+
+                      <div>
+                        <div className="font-semibold text-gray-900">{o.commonName}</div>
+                      </div>
                     </li>
                   ))}
                 </ul>
