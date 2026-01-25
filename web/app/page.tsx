@@ -6,6 +6,7 @@ import { useGeolocation } from "@/hooks/useGeolocation";
 import { API_ENDPOINTS } from "@/lib/constants";
 import type { Observation, Spot } from "@/lib/types";
 import { LocationBar, type LocationOption } from "@/components/map/LocationBar";
+import { Birdle } from "@/components/birdle/Birdle";
 
 const MapView = dynamic(() => import("@/components/map/MapView"), {
   ssr: false,
@@ -331,6 +332,7 @@ export default function Page() {
           </div>
         </div>
       </div>
+      <Birdle />
     </main>
   );
 }
