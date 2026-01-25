@@ -1,6 +1,89 @@
 import { NextResponse } from "next/server";
 import { asNum } from "@/lib/utils";
 
+// Cache for location photos
+const locationPhotoCache = new Map<string, string | null>();
+
+/**
+ * Fetch a photo of a location (park, nature reserve, etc.) from Wikipedia
+ * Uses location context to improve search accuracy
+ */
+async function getLocationPhoto(locationName: string, countryCode?: string, subnational1Code?: string): Promise<string | null> {
+  // Check cache first
+  const cacheKey = locationName.toLowerCase().trim();
+  if (locationPhotoCache.has(cacheKey)) {
+    return locationPhotoCache.get(cacheKey)!;
+  }
+
+  try {
+    // Clean up location name
+    const cleanName = locationName
+      .replace(/\s+(Park|Reserve|Conservation|Area|Wildlife|Refuge|Sanctuary|Trail|Pathway|Pond|Lake|River|Creek|Bay|Beach|Marsh|Wetland|Swamp|Bog|Fen)$/i, '')
+      .trim();
+    
+    // Build search variations with location context
+    const searchVariations: string[] = [
+      locationName, // Try exact name first
+      cleanName, // Without common suffixes
+    ];
+
+    // Add variations with common park terms
+    if (!locationName.toLowerCase().includes('park')) {
+      searchVariations.push(`${cleanName} Park`);
+    }
+    if (!locationName.toLowerCase().includes('reserve')) {
+      searchVariations.push(`${cleanName} Nature Reserve`);
+    }
+    if (!locationName.toLowerCase().includes('conservation')) {
+      searchVariations.push(`${cleanName} Conservation Area`);
+    }
+
+    // Add location context if available (e.g., "Central Park, New York")
+    if (subnational1Code) {
+      // subnational1Code is usually a state/province code, try to expand it
+      // For now, just add it as-is since we don't have a mapping
+      searchVariations.push(`${locationName}, ${subnational1Code}`);
+      searchVariations.push(`${cleanName} Park, ${subnational1Code}`);
+    }
+
+    // Try each variation
+    for (const searchName of searchVariations) {
+      try {
+        const encodedName = encodeURIComponent(searchName.replace(/\s+/g, '_').replace(/,/g, ''));
+        const wikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodedName}`;
+        const wikiRes = await fetch(wikiUrl, {
+          headers: { "User-Agent": "find-my-bird/1.0" },
+        });
+
+        if (wikiRes.ok) {
+          const wikiData = await wikiRes.json();
+          // Check if it's a valid page (not disambiguation or missing)
+          if (wikiData.type === 'standard' && !wikiData.title.toLowerCase().includes('disambiguation')) {
+            const imageUrl = wikiData?.originalimage?.source || wikiData?.thumbnail?.source || null;
+            if (imageUrl) {
+              console.log(`✓ Found Wikipedia image for "${locationName}" (searched as "${searchName}")`);
+              locationPhotoCache.set(cacheKey, imageUrl);
+              return imageUrl;
+            }
+          }
+        }
+      } catch (e) {
+        // Try next variation
+        continue;
+      }
+    }
+
+    // If no Wikipedia page found, return null (don't use fallback)
+    console.log(`✗ No Wikipedia image found for "${locationName}"`);
+    locationPhotoCache.set(cacheKey, null);
+    return null;
+  } catch (error) {
+    console.error(`Error fetching location photo for ${locationName}:`, error);
+    locationPhotoCache.set(cacheKey, null);
+    return null;
+  }
+}
+
 export async function GET(req: Request) {
   const key = process.env.EBIRD_API_KEY;
   if (!key) {
@@ -41,7 +124,7 @@ export async function GET(req: Request) {
   }
 
   const csvText = await resp.text();
-  
+
   // Parse CSV format: locId,countryCode,subnational1Code,subnational2Code,lat,lng,locName,lastObsDt,numSpeciesAllTime,numObservations
   const lines = csvText.trim().split("\n");
   const spots = lines.map((line) => {
@@ -77,5 +160,28 @@ export async function GET(req: Request) {
     };
   });
 
-  return NextResponse.json({ spots });
+  // Fetch location photos for each hotspot (with timeout to prevent slow responses)
+  const spotsWithPhotos = await Promise.all(
+    spots.map(async (spot) => {
+      try {
+        const photo = await Promise.race([
+          getLocationPhoto(spot.locName, spot.countryCode, spot.subnational1Code),
+          new Promise<string | null>((resolve) => setTimeout(() => resolve(null), 3000))
+        ]);
+
+        return {
+          ...spot,
+          imageUrl: photo,
+        };
+      } catch (e) {
+        console.error(`Error fetching photo for hotspot ${spot.locId}:`, e);
+        return {
+          ...spot,
+          imageUrl: null,
+        };
+      }
+    })
+  );
+
+  return NextResponse.json({ spots: spotsWithPhotos });
 }

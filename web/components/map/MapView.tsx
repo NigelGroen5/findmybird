@@ -1,13 +1,121 @@
 "use client";
 
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Icon } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Spot } from "@/lib/types";
 
 import UserMarker from "./UserMarker";
 import RadiusCircle from "./RadiusCircle";
+
+// Component for a hotspot marker with hover popup
+function HotspotMarker({ 
+  spot, 
+  isSelected, 
+  defaultIcon, 
+  highlightedIcon, 
+  onSpotSelect 
+}: { 
+  spot: Spot; 
+  isSelected: boolean; 
+  defaultIcon: Icon; 
+  highlightedIcon: Icon; 
+  onSpotSelect?: (spotId: string | null) => void;
+}) {
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  return (
+    <Marker
+      position={[spot.lat, spot.lng]}
+      icon={isSelected ? highlightedIcon : defaultIcon}
+      eventHandlers={{
+        mouseover: (e) => {
+          // Clear any pending close timeout
+          if (closeTimeoutRef.current) {
+            clearTimeout(closeTimeoutRef.current);
+            closeTimeoutRef.current = null;
+          }
+          e.target.openPopup();
+        },
+        mouseout: (e) => {
+          // Only close if not selected (keep open if clicked)
+          if (!isSelected) {
+            // Add a small delay before closing to allow moving to popup
+            closeTimeoutRef.current = setTimeout(() => {
+              e.target.closePopup();
+            }, 150);
+          }
+        },
+        click: () => {
+          if (onSpotSelect) {
+            onSpotSelect(isSelected ? null : spot.locId);
+          }
+        },
+      }}
+    >
+      <Popup
+        eventHandlers={{
+          add: (e) => {
+            // When popup is added, attach mouse events to popup element
+            const popupElement = e.popup?.getElement();
+            if (popupElement) {
+              const handleMouseEnter = () => {
+                // Clear close timeout when mouse enters popup
+                if (closeTimeoutRef.current) {
+                  clearTimeout(closeTimeoutRef.current);
+                  closeTimeoutRef.current = null;
+                }
+              };
+              
+              const handleMouseLeave = () => {
+                // Close popup when mouse leaves popup (unless selected)
+                if (!isSelected) {
+                  closeTimeoutRef.current = setTimeout(() => {
+                    const marker = e.popup?._source;
+                    if (marker) {
+                      marker.closePopup();
+                    }
+                  }, 150);
+                }
+              };
+              
+              popupElement.addEventListener('mouseenter', handleMouseEnter);
+              popupElement.addEventListener('mouseleave', handleMouseLeave);
+              
+              // Cleanup on remove
+              e.popup.on('remove', () => {
+                popupElement.removeEventListener('mouseenter', handleMouseEnter);
+                popupElement.removeEventListener('mouseleave', handleMouseLeave);
+                if (closeTimeoutRef.current) {
+                  clearTimeout(closeTimeoutRef.current);
+                }
+              });
+            }
+          },
+        }}
+      >
+        <div className="min-w-[200px]">
+          {spot.imageUrl && (
+            <img
+              src={spot.imageUrl}
+              alt={spot.locName}
+              className="w-full h-32 object-cover rounded-lg mb-2 border border-gray-200"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+              loading="lazy"
+            />
+          )}
+          <div className="text-sm">
+            <div className="font-semibold">{spot.locName}</div>
+            <div className="text-gray-600">{spot.numSpeciesAllTime} species</div>
+          </div>
+        </div>
+      </Popup>
+    </Marker>
+  );
+}
 
 // Fix Leaflet default icon paths for Next.js (must be done before any markers are created)
 if (typeof window !== "undefined") {
@@ -103,25 +211,14 @@ export default function MapView({
       {spots.map((spot) => {
         const isSelected = selectedSpotId === spot.locId;
         return (
-          <Marker
+          <HotspotMarker
             key={spot.locId}
-            position={[spot.lat, spot.lng]}
-            icon={isSelected ? highlightedIcon : defaultIcon}
-            eventHandlers={{
-              click: () => {
-                if (onSpotSelect) {
-                  onSpotSelect(isSelected ? null : spot.locId);
-                }
-              },
-            }}
-          >
-            <Popup>
-              <div className="text-sm">
-                <div className="font-semibold">{spot.locName}</div>
-                <div className="text-gray-600">{spot.numSpeciesAllTime} species</div>
-              </div>
-            </Popup>
-          </Marker>
+            spot={spot}
+            isSelected={isSelected}
+            defaultIcon={defaultIcon}
+            highlightedIcon={highlightedIcon}
+            onSpotSelect={onSpotSelect}
+          />
         );
       })}
     </MapContainer>

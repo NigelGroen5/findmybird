@@ -287,14 +287,27 @@ export default function Page() {
                           <div
                             key={spot.locId}
                             onClick={() => setSelectedSpotId(spot.locId)}
-                            className={`p-4 bg-white rounded-xl border transition-all cursor-pointer ${
+                            className={`p-4 bg-white rounded-xl border transition-all cursor-pointer flex gap-3 items-center ${
                               selectedSpotId === spot.locId
                                 ? "border-blue-500 shadow-md ring-2 ring-blue-200"
                                 : "border-gray-200/50 hover:border-gray-300 hover:shadow-sm"
                             }`}
                           >
-                            <div className="font-medium text-gray-900 mb-1">{spot.locName}</div>
-                            <div className="text-xs text-gray-500">{spot.numSpeciesAllTime} species recorded</div>
+                            {spot.imageUrl && (
+                              <img
+                                src={spot.imageUrl}
+                                alt={spot.locName}
+                                className="w-20 h-20 object-cover rounded-lg border border-gray-200 flex-shrink-0"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                                loading="lazy"
+                              />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-gray-900 mb-1">{spot.locName}</div>
+                              <div className="text-xs text-gray-500">{spot.numSpeciesAllTime} species recorded</div>
+                            </div>
                           </div>
                         ))}
                       </div>

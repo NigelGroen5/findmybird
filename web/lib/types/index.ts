@@ -31,4 +31,5 @@ export type Spot = {
   numSpeciesAllTime: number;
   lastObsDt: string;
   numObservations: number;
+  imageUrl?: string | null;
 };
