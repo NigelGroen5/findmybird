@@ -1,0 +1,137 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { API_ENDPOINTS } from "@/lib/constants";
+
+interface Bird {
+  name: string;
+  scientific: string;
+  taxon: string;
+  family: string;
+}
+
+type Props = {
+  speciesCode: string | null;
+  onClose: () => void;
+};
+
+export function BirdInfoModal({ speciesCode, onClose }: Props) {
+  const [bird, setBird] = useState<Bird | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!speciesCode) {
+      setBird(null);
+      setImageUrl(null);
+      return;
+    }
+    async function getSpecies(code: string) {
+      setLoading(true);
+      setImageUrl(null);
+      try {
+        const response = await fetch("/birds.csv");
+        const data = await response.text();
+        const rows = data.split("\n").filter(Boolean);
+        const birdRow = rows.slice(1).find((r) => r.split(",")[2] === code);
+
+        if (!birdRow) {
+          setBird(null);
+          return;
+        }
+
+        const birdValues = birdRow.split(",");
+        const birdObj: Bird = {
+          scientific: birdValues[0],
+          name: birdValues[1],
+          taxon: birdValues[3],
+          family: birdValues[7],
+        };
+
+        setBird(birdObj);
+
+        const params = new URLSearchParams({
+          speciesCode: code,
+          commonName: birdObj.name,
+          scientificName: birdObj.scientific,
+        });
+        const res = await fetch(`${API_ENDPOINTS.EBIRD_PHOTO}?${params}`);
+        const { imageUrl: url } = await res.json();
+        setImageUrl(url ?? null);
+      } catch (error) {
+        console.error(error);
+        setBird(null);
+        setImageUrl(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    getSpecies(speciesCode);
+  }, [speciesCode]);
+
+  if (!speciesCode) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+      onClick={onClose}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === "Escape" && onClose()}
+      aria-label="Close modal"
+    >
+      <div
+        className="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="bird-modal-title"
+      >
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center rounded-t-2xl">
+          <h2 id="bird-modal-title" className="text-lg font-semibold text-gray-900">
+            Species info
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+            aria-label="Close"
+          >
+            <span className="text-xl leading-none">×</span>
+          </button>
+        </div>
+
+        <div className="p-6">
+          {loading && <p className="text-gray-500">Loading…</p>}
+          {!loading && !bird && <p className="text-red-500">Bird not found</p>}
+          {!loading && bird && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <h3 className="text-2xl font-bold text-gray-900">{bird.name}</h3>
+                <p className="text-base text-gray-700">
+                  <strong>Scientific name:</strong> {bird.scientific}
+                </p>
+                <p className="text-base text-gray-700">
+                  <strong>Taxon order:</strong> {bird.taxon}
+                </p>
+                <p className="text-base text-gray-700">
+                  <strong>Family:</strong> {bird.family}
+                </p>
+              </div>
+              <div className="flex justify-center">
+                {imageUrl && (
+                  <img
+                    src={imageUrl}
+                    alt={`Photo of ${bird.name}`}
+                    className="w-full max-w-[240px] h-auto rounded-xl object-cover shadow-sm"
+                  />
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

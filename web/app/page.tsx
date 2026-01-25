@@ -6,6 +6,7 @@ import { useGeolocation } from "@/hooks/useGeolocation";
 import { API_ENDPOINTS } from "@/lib/constants";
 import type { Observation, Spot } from "@/lib/types";
 import { LocationBar, type LocationOption } from "@/components/map/LocationBar";
+import { BirdInfoModal } from "@/components/bird/BirdInfoModal";
 import { Birdle } from "@/components/birdle/Birdle";
 import { FlappyBird } from "@/components/flappy/FlappyBird";
 import { AngryBirds } from "@/components/angry/AngryBirds";
@@ -27,6 +28,7 @@ export default function Page() {
   const [spotsToShow, setSpotsToShow] = useState(5);
   const [selectedSpotId, setSelectedSpotId] = useState<string | null>(null);
   const [radius, setRadius] = useState(5);
+  const [selectedSpeciesCode, setSelectedSpeciesCode] = useState<string | null>(null);
 
   async function loadAt(lat: number, lng: number, searchRadius?: number) {
     const radiusToUse = searchRadius ?? radius;
@@ -247,7 +249,11 @@ export default function Page() {
                         return (
                           <div
                             key={i}
-                            className="p-4 bg-white rounded-xl border border-gray-200/50 hover:border-gray-300 hover:shadow-sm transition-all flex gap-4 items-center"
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => setSelectedSpeciesCode(bird.speciesCode)}
+                            onKeyDown={(e) => e.key === "Enter" && setSelectedSpeciesCode(bird.speciesCode)}
+                            className="p-4 bg-white rounded-xl border border-gray-200/50 hover:border-gray-300 hover:shadow-sm transition-all flex gap-4 items-center cursor-pointer"
                           >
                             {bird.imageUrl ? (
                               <>
@@ -361,6 +367,13 @@ export default function Page() {
         <FlappyBird />
         <AngryBirds />
       </div>
+
+      {selectedSpeciesCode && (
+        <BirdInfoModal
+          speciesCode={selectedSpeciesCode}
+          onClose={() => setSelectedSpeciesCode(null)}
+        />
+      )}
     </main>
   );
 }
