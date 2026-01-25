@@ -48,22 +48,22 @@ export function LocationBar({
     : currentLocation?.name || "Select a city";
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-50 relative">
+    <div className="bg-white/60 backdrop-blur-md border-b border-emerald-100/30 sticky top-0 z-50 relative shadow-sm">
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-500 font-light tracking-wide uppercase">
-            Find Birds near
+          <span className="text-sm text-emerald-700/70 font-medium tracking-wide">
+            Searching near
           </span>
           <div className="relative">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="px-5 py-2.5 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-full hover:border-gray-300 hover:shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-300 flex items-center gap-2"
+              className="px-5 py-2.5 text-sm font-semibold text-emerald-900 bg-white/90 border border-emerald-200/60 rounded-full hover:border-emerald-300 hover:shadow-md hover:bg-white transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 flex items-center gap-2"
             >
-              <span className={isUsingCurrentLocation ? "text-gray-900" : "text-gray-700"}>
+              <span className={isUsingCurrentLocation ? "text-emerald-900" : "text-emerald-800"}>
                 {displayText}
               </span>
               <svg
-                className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
+                className={`w-4 h-4 text-emerald-600 transition-transform duration-200 ${
                   isOpen ? "rotate-180" : ""
                 }`}
                 fill="none"
@@ -85,21 +85,21 @@ export function LocationBar({
                   className="fixed inset-0 z-10"
                   onClick={() => setIsOpen(false)}
                 />
-                <div className="absolute z-20 w-56 mt-2 bg-white border border-gray-200 rounded-2xl shadow-xl max-h-96 overflow-auto">
+                <div className="absolute z-20 w-56 mt-2 bg-white border border-emerald-200/40 rounded-2xl shadow-2xl max-h-96 overflow-auto">
                   <button
                     onClick={() => {
                       onUseCurrentLocation();
                       setIsOpen(false);
                     }}
-                    className={`w-full px-4 py-3 text-left text-sm transition-colors ${
+                    className={`w-full px-4 py-3 text-left text-sm transition-colors rounded-t-2xl ${
                       isUsingCurrentLocation
-                        ? "bg-gray-50 text-gray-900 font-medium"
-                        : "text-gray-700 hover:bg-gray-50"
+                        ? "bg-emerald-50 text-emerald-900 font-semibold"
+                        : "text-emerald-800 hover:bg-emerald-50/50"
                     }`}
                   >
                     My Current Location
                   </button>
-                  <div className="border-t border-gray-100" />
+                  <div className="border-t border-emerald-100/50" />
                   {ONTARIO_CITIES.map((city) => (
                     <button
                       key={city.id}
@@ -110,8 +110,8 @@ export function LocationBar({
                       className={`w-full px-4 py-3 text-left text-sm transition-colors ${
                         !isUsingCurrentLocation &&
                         currentLocation?.id === city.id
-                          ? "bg-gray-50 text-gray-900 font-medium"
-                          : "text-gray-700 hover:bg-gray-50"
+                          ? "bg-emerald-50 text-emerald-900 font-semibold"
+                          : "text-emerald-800 hover:bg-emerald-50/50"
                       }`}
                     >
                       {city.name}
@@ -123,16 +123,16 @@ export function LocationBar({
           </div>
 
           {/* Radius Control */}
-          <div className="flex items-center gap-2 ml-4 pl-4 border-l border-gray-200">
-            <span className="text-xs text-gray-500 font-medium uppercase">Radius:</span>
+          <div className="flex items-center gap-2 ml-4 pl-4 border-l border-emerald-200/50">
+            <span className="text-xs text-emerald-700/70 font-semibold tracking-wide">Radius:</span>
             {[5, 10, 15, 25].map((r) => (
               <button
                 key={r}
                 onClick={() => onRadiusChange?.(r)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
+                className={`px-3 py-1.5 text-xs font-bold rounded-full transition-all ${
                   radius === r
-                    ? "bg-gray-900 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    ? "bg-gradient-to-br from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-900/20"
+                    : "bg-emerald-100/60 text-emerald-800 hover:bg-emerald-200/60"
                 }`}
               >
                 {r}km

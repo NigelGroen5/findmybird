@@ -393,92 +393,88 @@ export function AngryBirds() {
   }, [isDragging, dragStart, launchBird]);
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm border-b border-gray-100">
-      <div className="max-w-7xl mx-auto px-6 py-3">
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="text-sm font-semibold text-gray-900 hover:text-gray-700 transition-colors"
+    <>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="px-6 py-3 bg-gradient-to-br from-red-500 to-pink-500 text-white font-bold rounded-2xl shadow-lg shadow-red-900/20 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 text-sm"
+      >
+        Angry Birds
+      </button>
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setIsOpen(false)}
+        >
+          <div
+            className="bg-gradient-to-br from-white to-red-50/30 rounded-3xl shadow-2xl p-6 border border-red-200/50"
+            onClick={(e) => e.stopPropagation()}
           >
-            Angry Birds
-          </button>
-          {isOpen && (
-            <div
-              className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
-              onClick={() => setIsOpen(false)}
-            >
-              <div
-                className="bg-white rounded-2xl shadow-2xl p-6"
-                onClick={(e) => e.stopPropagation()}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent">Angry Birds</h2>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="text-gray-400 hover:text-gray-600 text-2xl leading-none w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
               >
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-2xl font-bold text-gray-900">Angry Birds</h2>
-                  <button
-                    onClick={() => setIsOpen(false)}
-                    className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
-                  >
-                    ×
-                  </button>
-                </div>
+                ×
+              </button>
+            </div>
 
-                {gameOver && (
-                  <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-center">
-                    <p className="text-green-800 font-semibold">
-                      🎉 Victory! All pigs destroyed! Score: {score}
-                    </p>
-                  </div>
-                )}
-
-                {!isPlaying && !gameOver && (
-                  <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-center">
-                    <p className="text-blue-800 font-semibold">
-                      Drag the bird back and release to launch!
-                    </p>
-                  </div>
-                )}
-
-                <div className="mb-4">
-                  <canvas
-                    ref={canvasRef}
-                    width={CANVAS_WIDTH}
-                    height={CANVAS_HEIGHT}
-                    className="border-2 border-gray-300 rounded-lg cursor-crosshair"
-                    onMouseDown={handleMouseDown}
-                    onMouseMove={handleMouseMove}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseUp}
-                  />
-                </div>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={startGame}
-                    className="flex-1 px-4 py-2 bg-gray-900 text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors"
-                  >
-                    {gameOver ? "Play Again" : isPlaying ? "Restart" : "Start Game"}
-                  </button>
-                  {gameOver && (
-                    <button
-                      onClick={() => {
-                        setIsOpen(false);
-                        setGameOver(false);
-                        setIsPlaying(false);
-                      }}
-                      className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
-                    >
-                      Close
-                    </button>
-                  )}
-                </div>
-
-                <p className="text-xs text-gray-500 text-center mt-4">
-                  Drag the red bird back and release to launch. Destroy all green pigs to win!
+            {gameOver && (
+              <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-center shadow-sm">
+                <p className="text-emerald-800 font-semibold">
+                  🎉 Victory! All pigs destroyed! Score: {score}
                 </p>
               </div>
+            )}
+
+            {!isPlaying && !gameOver && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-2xl text-center shadow-sm">
+                <p className="text-red-800 font-semibold">
+                  Drag the bird back and release to launch!
+                </p>
+              </div>
+            )}
+
+            <div className="mb-4">
+              <canvas
+                ref={canvasRef}
+                width={CANVAS_WIDTH}
+                height={CANVAS_HEIGHT}
+                className="border-2 border-red-200 rounded-2xl cursor-crosshair shadow-lg"
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+              />
             </div>
-          )}
+
+            <div className="flex gap-2">
+              <button
+                onClick={startGame}
+                className="flex-1 px-4 py-3 bg-gradient-to-br from-red-600 to-pink-600 text-white font-bold rounded-2xl hover:from-red-700 hover:to-pink-700 transition-all shadow-lg shadow-red-900/20"
+              >
+                {gameOver ? "Play Again" : isPlaying ? "Restart" : "Start Game"}
+              </button>
+              {gameOver && (
+                <button
+                  onClick={() => {
+                    setIsOpen(false);
+                    setGameOver(false);
+                    setIsPlaying(false);
+                  }}
+                  className="px-4 py-3 bg-gray-200 text-gray-800 font-bold rounded-2xl hover:bg-gray-300 transition-colors shadow-sm"
+                >
+                  Close
+                </button>
+              )}
+            </div>
+
+            <p className="text-xs text-red-700/70 text-center mt-4 font-medium">
+              Drag the red bird back and release to launch. Destroy all green pigs to win!
+            </p>
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 }

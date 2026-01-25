@@ -175,28 +175,28 @@ export function Birdle() {
   const getLetterColor = (state: LetterState) => {
     switch (state) {
       case "correct":
-        return "bg-green-500 text-white";
+        return "bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-md";
       case "present":
-        return "bg-yellow-500 text-white";
+        return "bg-gradient-to-br from-amber-400 to-yellow-500 text-white shadow-md";
       case "absent":
-        return "bg-gray-400 text-white";
+        return "bg-gray-400 text-white shadow-sm";
       default:
-        return "bg-gray-200 text-gray-700 border border-gray-300";
+        return "bg-white text-gray-700 border-2 border-amber-200/60";
     }
   };
 
   const getKeyboardKeyColor = (letter: string) => {
     const state = letterStates.get(letter);
-    if (!state) return "bg-gray-200 hover:bg-gray-300 text-gray-900";
+    if (!state) return "bg-amber-100 hover:bg-amber-200 text-amber-900";
     switch (state) {
       case "correct":
-        return "bg-green-500 text-white hover:bg-green-600";
+        return "bg-gradient-to-br from-emerald-500 to-green-600 text-white hover:from-emerald-600 hover:to-green-700";
       case "present":
-        return "bg-yellow-500 text-white hover:bg-yellow-600";
+        return "bg-gradient-to-br from-amber-400 to-yellow-500 text-white hover:from-amber-500 hover:to-yellow-600";
       case "absent":
         return "bg-gray-400 text-white hover:bg-gray-500";
       default:
-        return "bg-gray-200 hover:bg-gray-300 text-gray-900";
+        return "bg-amber-100 hover:bg-amber-200 text-amber-900";
     }
   };
 
@@ -217,39 +217,37 @@ export function Birdle() {
   ];
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm border-b border-gray-100">
-      <div className="max-w-7xl mx-auto px-6 py-3">
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="text-sm font-semibold text-gray-900 hover:text-gray-700 transition-colors"
-          >
-            BIRDLE
-          </button>
-          {isOpen && (
-            <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setIsOpen(false)}>
-              <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-2xl font-bold text-gray-900">BIRDLE</h2>
-                  <button
-                    onClick={() => setIsOpen(false)}
-                    className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
-                  >
-                    ×
-                  </button>
-                </div>
+    <>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="px-6 py-3 bg-gradient-to-br from-amber-500 to-orange-500 text-white font-bold rounded-2xl shadow-lg shadow-amber-900/20 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 text-sm"
+      >
+        BIRDLE
+      </button>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setIsOpen(false)}>
+          <div className="bg-gradient-to-br from-white to-amber-50/30 rounded-3xl shadow-2xl max-w-md w-full p-6 border border-amber-200/50" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">BIRDLE</h2>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="text-gray-400 hover:text-gray-600 text-2xl leading-none w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+              >
+                ×
+              </button>
+            </div>
 
-                {gameState === "won" && (
-                  <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-center">
-                    <p className="text-green-800 font-semibold">🎉 You got it! The bird was {targetBird}</p>
-                  </div>
-                )}
+            {gameState === "won" && (
+              <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-center shadow-sm">
+                <p className="text-emerald-800 font-semibold">🎉 You got it! The bird was {targetBird}</p>
+              </div>
+            )}
 
-                {gameState === "lost" && (
-                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-center">
-                    <p className="text-red-800 font-semibold">The bird was {targetBird}</p>
-                  </div>
-                )}
+            {gameState === "lost" && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-2xl text-center shadow-sm">
+                <p className="text-red-800 font-semibold">The bird was {targetBird}</p>
+              </div>
+            )}
 
                 {/* Game Grid */}
                 {targetBird && (
@@ -260,7 +258,7 @@ export function Birdle() {
                           {guess.states.map((state, colIndex) => (
                             <div
                               key={colIndex}
-                              className={`w-12 h-12 flex items-center justify-center font-bold text-lg rounded ${getLetterColor(
+                              className={`w-12 h-12 flex items-center justify-center font-bold text-lg rounded-lg ${getLetterColor(
                                 state
                               )}`}
                             >
@@ -283,9 +281,9 @@ export function Birdle() {
                           <button
                             key={key}
                             onClick={() => handleKeyPress(key)}
-                            className={`px-2 py-3 font-semibold rounded text-sm ${
+                            className={`px-2 py-3 font-semibold rounded-lg text-sm transition-all ${
                               isSpecial
-                                ? "bg-gray-300 hover:bg-gray-400 text-gray-900 min-w-[60px]"
+                                ? "bg-gradient-to-br from-gray-300 to-gray-400 hover:from-gray-400 hover:to-gray-500 text-gray-900 min-w-[60px] shadow-sm"
                                 : getKeyboardKeyColor(key)
                             }`}
                           >
@@ -297,24 +295,22 @@ export function Birdle() {
                   ))}
                 </div>
 
-                {/* New Game Button */}
-                {(gameState === "won" || gameState === "lost") && (
-                  <button
-                    onClick={startNewGame}
-                    className="w-full px-4 py-2 bg-gray-900 text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors"
-                  >
-                    New Game
-                  </button>
-                )}
+            {/* New Game Button */}
+            {(gameState === "won" || gameState === "lost") && (
+              <button
+                onClick={startNewGame}
+                className="w-full px-4 py-3 bg-gradient-to-br from-amber-600 to-orange-600 text-white font-bold rounded-2xl hover:from-amber-700 hover:to-orange-700 transition-all shadow-lg shadow-amber-900/20"
+              >
+                New Game
+              </button>
+            )}
 
-                <p className="text-xs text-gray-500 text-center mt-4">
-                  Guess the bird name in 6 tries. Green = correct letter & position, Yellow = correct letter wrong position.
-                </p>
-              </div>
-            </div>
-          )}
+            <p className="text-xs text-amber-700/70 text-center mt-4 font-medium">
+              Guess the bird name in 6 tries. Green = correct letter & position, Yellow = correct letter wrong position.
+            </p>
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
