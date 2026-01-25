@@ -7,6 +7,7 @@ import { API_ENDPOINTS } from "@/lib/constants";
 import type { Observation, Spot } from "@/lib/types";
 import { LocationBar, type LocationOption } from "@/components/map/LocationBar";
 import { Birdle } from "@/components/birdle/Birdle";
+import { FlappyBird } from "@/components/flappy/FlappyBird";
 
 const MapView = dynamic(() => import("@/components/map/MapView"), {
   ssr: false,
@@ -332,7 +333,10 @@ export default function Page() {
           </div>
         </div>
       </div>
-      <Birdle />
+      <div className="flex gap-4 justify-center items-center pb-8">
+        <Birdle />
+        <FlappyBird />
+      </div>
     </main>
   );
 }
