@@ -113,15 +113,15 @@ export default function Page() {
   const showMap = displayLat != null && displayLng != null;
 
   const uniqueBirds = observations.reduce((acc, obs) => {
-    const existing = acc.get(obs.comName);
-    if (!existing || new Date(obs.obsDt) > new Date(existing.obsDt)) {
-      acc.set(obs.comName, obs);
+    const existing = acc.get(obs.commonName);
+    if (!existing || new Date(obs.observedAt) > new Date(existing.observedAt)) {
+      acc.set(obs.commonName, obs);
     }
     return acc;
   }, new Map<string, Observation>());
 
   const recentBirds = Array.from(uniqueBirds.values()).sort(
-    (a, b) => new Date(b.obsDt).getTime() - new Date(a.obsDt).getTime()
+    (a, b) => new Date(b.observedAt).getTime() - new Date(a.observedAt).getTime()
   );
 
   return (
@@ -199,41 +199,8 @@ export default function Page() {
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      {observations.map((o, i) => (
-                        <div
-                          key={i}
-                          className="p-4 bg-white rounded-xl border border-gray-200/50 hover:border-gray-300 hover:shadow-sm transition-all flex gap-4 items-center"
-                        >
-                          {o.imageUrl ? (
-                            <>
-                              <img
-                                src={o.imageUrl}
-                                alt={o.commonName}
-                                className="w-16 h-16 object-cover rounded-lg border border-gray-200"
-                                onError={(e) => {
-                                  console.error(`Failed to load image for ${o.commonName}: ${o.imageUrl}`);
-                                  e.currentTarget.style.display = 'none';
-                                  const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
-                                  if (placeholder) placeholder.style.display = 'flex';
-                                }}
-                              />
-                              <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center text-xs text-gray-500" style={{ display: 'none' }}>
-                                No photo
-                              </div>
-                            </>
-                          ) : (
-                            <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center text-xs text-gray-500">
-                              No photo
-                            </div>
-                          )}
-
-                          <div className="flex-1">
-                            <div className="font-medium text-gray-900">{o.commonName}</div>
-                          </div>
-                        </div>
-                      ))}
                       {recentBirds.map((bird, i) => {
-                        const observationDate = new Date(bird.obsDt);
+                        const observationDate = new Date(bird.observedAt);
                         const now = new Date();
                         const diffHours = Math.floor((now.getTime() - observationDate.getTime()) / (1000 * 60 * 60));
                         const diffDays = Math.floor(diffHours / 24);
@@ -252,17 +219,35 @@ export default function Page() {
                         return (
                           <div
                             key={i}
-                            className="p-4 bg-white rounded-xl border border-gray-200/50 hover:border-gray-300 hover:shadow-sm transition-all"
+                            className="p-4 bg-white rounded-xl border border-gray-200/50 hover:border-gray-300 hover:shadow-sm transition-all flex gap-4 items-center"
                           >
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <div className="font-medium text-gray-900">{bird.comName}</div>
-                                {bird.locName && (
-                                  <div className="text-xs text-gray-500 mt-0.5">{bird.locName}</div>
-                                )}
+                            {bird.imageUrl ? (
+                              <>
+                                <img
+                                  src={bird.imageUrl}
+                                  alt={bird.commonName}
+                                  className="w-16 h-16 object-cover rounded-lg border border-gray-200"
+                                  onError={(e) => {
+                                    console.error(`Failed to load image for ${bird.commonName}: ${bird.imageUrl}`);
+                                    e.currentTarget.style.display = 'none';
+                                    const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
+                                    if (placeholder) placeholder.style.display = 'flex';
+                                  }}
+                                />
+                                <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center text-xs text-gray-500" style={{ display: 'none' }}>
+                                  No photo
+                                </div>
+                              </>
+                            ) : (
+                              <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center text-xs text-gray-500">
+                                No photo
                               </div>
-                              <div className="text-xs text-gray-500 ml-2 whitespace-nowrap">{timeAgo}</div>
+                            )}
+
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-900">{bird.commonName}</div>
                             </div>
+                            <div className="text-xs text-gray-500 ml-2 whitespace-nowrap">{timeAgo}</div>
                           </div>
                         );
                       })}

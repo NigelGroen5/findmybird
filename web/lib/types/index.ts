@@ -9,14 +9,15 @@ export type Coordinates = {
 };
 
 export type Observation = {
+  id: string;
+  speciesCode: string;
   commonName: string;
-  imageUrl?: string | null;
-  // Add more fields as needed
-  comName: string;
-  sciName?: string;
-  obsDt: string; 
-  locName?: string;
-  howMany?: number;
+  scientificName: string;
+  count: number | null;
+  observedAt: string;
+  lat: number;
+  lng: number;
+  imageUrl: string | null;
 };
 
 export type Spot = {
