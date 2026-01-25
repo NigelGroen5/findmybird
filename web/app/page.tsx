@@ -184,7 +184,7 @@ export default function Page() {
                     : "text-gray-600 hover:text-gray-900"
                 }`}
               >
-                Hotspots ({spots.length})
+                Trending spots ({spots.length})
               </button>
             </div>
 
@@ -279,7 +279,7 @@ export default function Page() {
                 <>
                   {spots.length === 0 ? (
                     <div className="text-center py-12">
-                      <p className="text-sm text-gray-400">No hotspots found.</p>
+                      <p className="text-sm text-gray-400">No Trending spots found.</p>
                     </div>
                   ) : (
                     <>

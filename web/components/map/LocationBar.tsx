@@ -40,7 +40,7 @@ export function LocationBar({
   const [isOpen, setIsOpen] = useState(false);
 
   const displayText = isUsingCurrentLocation
-    ? "my current location"
+    ? "My current location"
     : currentLocation?.name || "Select a city";
 
   return (
