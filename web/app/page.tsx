@@ -6,10 +6,7 @@ import { useGeolocation } from "@/hooks/useGeolocation";
 import { API_ENDPOINTS } from "@/lib/constants";
 import type { Observation, Spot } from "@/lib/types";
 import { LocationBar, type LocationOption } from "@/components/map/LocationBar";
-import { BirdInfoModal } from "@/components/bird/BirdInfoModal";
 import { Birdle } from "@/components/birdle/Birdle";
-import { FlappyBird } from "@/components/flappy/FlappyBird";
-import { AngryBirds } from "@/components/angry/AngryBirds";
 
 const MapView = dynamic(() => import("@/components/map/MapView"), {
   ssr: false,
@@ -27,20 +24,17 @@ export default function Page() {
   const [activeTab, setActiveTab] = useState<"birds" | "spots">("birds");
   const [spotsToShow, setSpotsToShow] = useState(5);
   const [selectedSpotId, setSelectedSpotId] = useState<string | null>(null);
-  const [radius, setRadius] = useState(5);
-  const [selectedSpeciesCode, setSelectedSpeciesCode] = useState<string | null>(null);
 
-  async function loadAt(lat: number, lng: number, searchRadius?: number) {
-    const radiusToUse = searchRadius ?? radius;
+  async function loadAt(lat: number, lng: number) {
     setError("");
     setLoading(true);
     try {
       const [birdsRes, spotsRes] = await Promise.all([
         fetch(
-          `${API_ENDPOINTS.EBIRD_RECENT}?lat=${lat}&lng=${lng}&dist=${radiusToUse}&back=7`
+          `${API_ENDPOINTS.EBIRD_RECENT}?lat=${lat}&lng=${lng}&dist=10&back=7`
         ),
         fetch(
-          `${API_ENDPOINTS.EBIRD_HOTSPOTS}?lat=${lat}&lng=${lng}&dist=${radiusToUse}`
+          `${API_ENDPOINTS.EBIRD_HOTSPOTS}?lat=${lat}&lng=${lng}&dist=10`
         ),
       ]);
 
@@ -61,6 +55,7 @@ export default function Page() {
       const birdsJson = await birdsRes.json();
       const spotsJson = await spotsRes.json();
       
+      // Debug: log full response
       console.log('Birds API Response:', birdsJson);
       
       // Check for errors in birds response
@@ -147,13 +142,6 @@ export default function Page() {
         onLocationChange={handleLocationChange}
         onUseCurrentLocation={handleUseCurrentLocation}
         isUsingCurrentLocation={isUsingCurrentLocation}
-        radius={radius}
-        onRadiusChange={(newRadius) => {
-          setRadius(newRadius);
-          if (displayLat != null && displayLng != null) {
-            loadAt(displayLat, displayLng, newRadius);
-          }
-        }}
       />
 
       <div className="max-w-7xl mx-auto px-6 py-8">
@@ -168,7 +156,6 @@ export default function Page() {
                   spots={spots.slice(0, spotsToShow)}
                   selectedSpotId={selectedSpotId}
                   onSpotSelect={setSelectedSpotId}
-                  radius={radius}
                 />
               </div>
             </div>
@@ -196,7 +183,7 @@ export default function Page() {
                     : "text-gray-600 hover:text-gray-900"
                 }`}
               >
-                Trending spots ({Math.min(25, spots.length)})
+                Trending spots ({spots.length})
               </button>
             </div>
 
@@ -249,11 +236,7 @@ export default function Page() {
                         return (
                           <div
                             key={i}
-                            role="button"
-                            tabIndex={0}
-                            onClick={() => setSelectedSpeciesCode(bird.speciesCode)}
-                            onKeyDown={(e) => e.key === "Enter" && setSelectedSpeciesCode(bird.speciesCode)}
-                            className="p-4 bg-white rounded-xl border border-gray-200/50 hover:border-gray-300 hover:shadow-sm transition-all flex gap-4 items-center cursor-pointer"
+                            className="p-4 bg-white rounded-xl border border-gray-200/50 hover:border-gray-300 hover:shadow-sm transition-all flex gap-4 items-center"
                           >
                             {bird.imageUrl ? (
                               <>
@@ -334,16 +317,16 @@ export default function Page() {
                             if (spotsToShow === 5) {
                               setSpotsToShow(15);
                             } else if (spotsToShow === 15) {
-                              setSpotsToShow(25);
+                              setSpotsToShow(30);
                             } else {
-                              setSpotsToShow(Math.min(25, spots.length));
+                              setSpotsToShow(spots.length);
                             }
                           }}
                           className="mt-4 w-full px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition-colors"
                         >
                           {spotsToShow === 5 && `Show top 15 (${Math.min(15, spots.length)})`}
-                          {spotsToShow === 15 && `Show top 25 (${Math.min(25, spots.length)})`}
-                          {spotsToShow === 25 && spots.length > 25 && `Show all (${Math.min(25, spots.length)})`}
+                          {spotsToShow === 15 && `Show top 30 (${Math.min(30, spots.length)})`}
+                          {spotsToShow === 30 && spots.length > 30 && `Show all (${spots.length})`}
                         </button>
                       )}
                       {spotsToShow > 5 && (
@@ -362,18 +345,7 @@ export default function Page() {
           </div>
         </div>
       </div>
-      <div className="flex gap-4 justify-center items-center pb-8">
-        <Birdle />
-        <FlappyBird />
-        <AngryBirds />
-      </div>
-
-      {selectedSpeciesCode && (
-        <BirdInfoModal
-          speciesCode={selectedSpeciesCode}
-          onClose={() => setSelectedSpeciesCode(null)}
-        />
-      )}
+      <Birdle />
     </main>
   );
 }
