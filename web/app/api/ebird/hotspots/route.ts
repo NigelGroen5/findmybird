@@ -4,6 +4,15 @@ import { asNum } from "@/lib/utils";
 // Cache for location photos
 const locationPhotoCache = new Map<string, string | null>();
 
+// Local park images to use as fallbacks (distributed evenly in order)
+const localParkImages = [
+  '/parks/park1.jpg',
+  '/parks/park2.webp',
+  '/parks/park4.jpg',
+  '/parks/park5.jpg',
+  '/parks/park6.jpg',
+];
+
 /**
  * Fetch a photo of a location (park, nature reserve, etc.) from Wikipedia
  * Uses location context to improve search accuracy
@@ -20,7 +29,7 @@ async function getLocationPhoto(locationName: string, countryCode?: string, subn
     const cleanName = locationName
       .replace(/\s+(Park|Reserve|Conservation|Area|Wildlife|Refuge|Sanctuary|Trail|Pathway|Pond|Lake|River|Creek|Bay|Beach|Marsh|Wetland|Swamp|Bog|Fen)$/i, '')
       .trim();
-    
+
     // Build search variations with location context
     const searchVariations: string[] = [
       locationName, // Try exact name first
@@ -73,12 +82,13 @@ async function getLocationPhoto(locationName: string, countryCode?: string, subn
       }
     }
 
-    // If no Wikipedia page found, return null (don't use fallback)
+    // If no Wikipedia page found, return null so we can assign in round-robin order later
     console.log(`✗ No Wikipedia image found for "${locationName}"`);
     locationPhotoCache.set(cacheKey, null);
     return null;
   } catch (error) {
     console.error(`Error fetching location photo for ${locationName}:`, error);
+    // Return null so we can assign in round-robin order later
     locationPhotoCache.set(cacheKey, null);
     return null;
   }
@@ -161,7 +171,7 @@ export async function GET(req: Request) {
   });
 
   // Fetch location photos for each hotspot (with timeout to prevent slow responses)
-  const spotsWithPhotos = await Promise.all(
+  const spotsWithPhotosTemp = await Promise.all(
     spots.map(async (spot) => {
       try {
         const photo = await Promise.race([
@@ -182,6 +192,42 @@ export async function GET(req: Request) {
       }
     })
   );
+
+  // Assign local park images in round-robin order to spots without photos
+  // Ensure no two consecutive parks get the same image
+  let fallbackImageCounter = 0;
+  let lastAssignedImage: string | null = null;
+  
+  const spotsWithPhotos = spotsWithPhotosTemp.map((spot) => {
+    if (!spot.imageUrl) {
+      let assignedImage: string;
+      let attempts = 0;
+      
+      // Find an image that's different from the last assigned one
+      do {
+        assignedImage = localParkImages[fallbackImageCounter % localParkImages.length];
+        fallbackImageCounter++;
+        attempts++;
+        
+        // If we've tried all images and still match, just use it (shouldn't happen with >1 images)
+        if (attempts > localParkImages.length) {
+          break;
+        }
+      } while (assignedImage === lastAssignedImage && localParkImages.length > 1);
+      
+      lastAssignedImage = assignedImage;
+      console.log(`📸 Assigning local image ${assignedImage} to "${spot.locName}" (no Wikipedia photo)`);
+      
+      return {
+        ...spot,
+        imageUrl: assignedImage,
+      };
+    }
+    // Reset last assigned image when we encounter a park with a Wikipedia photo
+    // This allows the next park without a photo to use any image
+    lastAssignedImage = null;
+    return spot;
+  });
 
   return NextResponse.json({ spots: spotsWithPhotos });
 }

@@ -13,30 +13,64 @@ async function getBirdPhoto(speciesCode: string, commonName?: string, scientific
 
     // Method 1: Try Wikipedia/Wikimedia Commons first (more reliable)
     if (commonName) {
-      try {
-        const wikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(commonName.replace(/\s+/g, '_'))}`;
-        const wikiRes = await fetch(wikiUrl, {
-          headers: {
-            "User-Agent": "find-my-bird/1.0",
-          },
-        });
+      // Try multiple search variations to find the correct bird page
+      // Start with "(bird)" variation first for ambiguous names like "redhead"
+      const searchVariations = [
+        `${commonName} (bird)`, // Try with "(bird)" suffix first (most reliable for bird pages)
+        `${commonName} bird`, // Try with " bird" suffix
+        commonName, // Try exact name last (may return non-bird results)
+      ];
 
-        if (wikiRes.ok) {
-          const wikiData = await wikiRes.json();
-          // Verify it's actually about a bird (check if it's a disambiguation or wrong page)
-            if (wikiData.type === 'standard' && !wikiData.title.toLowerCase().includes('disambiguation')) {
+      for (const searchTerm of searchVariations) {
+        try {
+          const wikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(searchTerm.replace(/\s+/g, '_'))}`;
+          const wikiRes = await fetch(wikiUrl, {
+            headers: {
+              "User-Agent": "find-my-bird/1.0",
+            },
+          });
+
+          if (wikiRes.ok) {
+            const wikiData = await wikiRes.json();
+            // Verify it's actually about a bird
+            const isDisambiguation = wikiData.type === 'disambiguation' || wikiData.title.toLowerCase().includes('disambiguation');
+            const isStandardPage = wikiData.type === 'standard';
+            
+            // Check if page is clearly NOT about a bird (for exact name searches)
+            const title = wikiData.title?.toLowerCase() || '';
+            const extract = wikiData.extract?.toLowerCase() || '';
+            const hasBirdInTitle = title.includes('(bird)') || title.includes(' bird');
+            
+            // For exact name search, only reject if we can clearly tell it's NOT a bird
+            // Accept pages with "(bird)" in title, or if extract mentions bird-related terms
+            // Only reject if it's clearly about a person/character/etc.
+            if (searchTerm === commonName && !hasBirdInTitle) {
+              const isPersonPage = extract.includes('person') || extract.includes('human') || 
+                                   extract.includes('character') || extract.includes('actor') ||
+                                   extract.includes('singer') || extract.includes('musician') ||
+                                   title.includes('(person)') || title.includes('(character)');
+              
+              // If it's clearly about a person/character and not a bird, skip it
+              if (isPersonPage && !extract.includes('bird') && !extract.includes('species') && !extract.includes('avian')) {
+                continue; // Skip clearly non-bird pages
+              }
+            }
+            
+            if (isStandardPage && !isDisambiguation) {
               // Prefer originalimage over thumbnail (higher quality, direct URL)
               imageUrl = wikiData?.originalimage?.source || wikiData?.thumbnail?.source || null;
               if (imageUrl) {
                 // Wikipedia URLs work directly - both thumbnail and originalimage URLs are valid
-                console.log(`✓ Found Wikipedia image for ${speciesCode} (${commonName}): ${imageUrl.substring(0, 100)}...`);
+                console.log(`✓ Found Wikipedia image for ${speciesCode} (${commonName}) using search: "${searchTerm}": ${imageUrl.substring(0, 100)}...`);
                 photoCache.set(speciesCode, imageUrl);
                 return imageUrl;
               }
             }
+          }
+        } catch (e) {
+          // Try next variation
+          continue;
         }
-      } catch (e) {
-        // Continue to next method
       }
     }
 
