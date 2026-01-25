@@ -214,7 +214,7 @@ export default function Page() {
                       <p className="text-sm text-gray-400">No birds found. Try a different location.</p>
                     </div>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="max-h-[530px] overflow-y-auto space-y-2 pr-2 pb-2">
                       {recentBirds.map((bird, i) => {
                         const observationDate = new Date(bird.observedAt);
                         const now = new Date();
