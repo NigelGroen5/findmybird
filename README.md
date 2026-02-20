@@ -1,6 +1,6 @@
 # FindMyBird
 
-A bird-finding web app built for **ConUHacks**. Discover recent bird sightings and hotspots near you on an interactive map, powered by the eBird API.
+A bird-finding web app. Discover recent bird sightings and hotspots near you on an interactive map, powered by the eBird API.
 
 ## Features
 
